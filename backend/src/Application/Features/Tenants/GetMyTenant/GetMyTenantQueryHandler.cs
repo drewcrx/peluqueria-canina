@@ -37,7 +37,10 @@ public class GetMyTenantQueryHandler(IApplicationDbContext db, ITenantContext te
             tenant.PublicFormSlug,
             plan.Code,
             plan.Name,
+            plan.PriceUsd,
+            plan.MaxEmployees,
             subscription.Status.ToString(),
+            subscription.StartedAt,
             subscription.CurrentPeriodEnd,
             features);
     }

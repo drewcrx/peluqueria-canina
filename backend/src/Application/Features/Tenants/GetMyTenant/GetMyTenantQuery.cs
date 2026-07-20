@@ -10,6 +10,9 @@ public record MyTenantDto(
     string PublicFormSlug,
     string PlanCode,
     string PlanName,
+    decimal PlanPriceUsd,
+    int? MaxEmployees,
     string SubscriptionStatus,
+    DateTime StartedAt,
     DateTime CurrentPeriodEnd,
     string[] Features);

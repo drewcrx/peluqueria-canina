@@ -6,7 +6,10 @@ export interface MyTenant {
   publicFormSlug: string
   planCode: string
   planName: string
-  subscriptionStatus: string
+  planPriceUsd: number
+  maxEmployees: number | null
+  subscriptionStatus: 'Trialing' | 'Active' | 'PastDue' | 'Cancelled'
+  startedAt: string
   currentPeriodEnd: string
   features: string[]
 }
