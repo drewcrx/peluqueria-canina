@@ -60,6 +60,8 @@ export function Sidebar() {
   const { user, logout } = useAuth()
   const { data: tenant } = useQuery({ queryKey: ['my-tenant'], queryFn: getMyTenant, staleTime: 60_000 })
   const planFeatures = tenant?.features
+  const isOwner = user?.roles.includes('TenantOwner') ?? false
+  const visibleCoreItems = CORE_NAV_ITEMS.filter((item) => !item.ownerOnly || isOwner)
 
   return (
     <motion.aside
@@ -85,7 +87,7 @@ export function Sidebar() {
           <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-600">
             Tu negocio
           </p>
-          {CORE_NAV_ITEMS.map((item) => (
+          {visibleCoreItems.map((item) => (
             <NavRow key={item.label} item={item} unlocked />
           ))}
         </div>

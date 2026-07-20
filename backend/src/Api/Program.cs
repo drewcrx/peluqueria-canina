@@ -81,6 +81,9 @@ builder.Services
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(AuthorizationPolicies.TenantUser, policy => policy.RequireClaim("tenant_id"));
+    options.AddPolicy(AuthorizationPolicies.TenantOwner, policy => policy
+        .RequireClaim("tenant_id")
+        .RequireRole(RoleNames.TenantOwner));
     options.AddPolicy(AuthorizationPolicies.PlatformAdmin, policy => policy.RequireRole(RoleNames.PlatformAdmin));
 });
 

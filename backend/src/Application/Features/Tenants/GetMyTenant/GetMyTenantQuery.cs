@@ -12,6 +12,7 @@ public record MyTenantDto(
     string PlanName,
     decimal PlanPriceUsd,
     int? MaxEmployees,
+    int EmployeeCount,
     string SubscriptionStatus,
     DateTime StartedAt,
     DateTime CurrentPeriodEnd,

@@ -6,7 +6,7 @@ using PeluqueriaSaas.Application.Common.Interfaces;
 
 namespace PeluqueriaSaas.Application.Features.Tenants.GetMyTenant;
 
-public class GetMyTenantQueryHandler(IApplicationDbContext db, ITenantContext tenantContext)
+public class GetMyTenantQueryHandler(IApplicationDbContext db, IIdentityService identityService, ITenantContext tenantContext)
     : IRequestHandler<GetMyTenantQuery, MyTenantDto>
 {
     public async Task<MyTenantDto> Handle(GetMyTenantQuery request, CancellationToken cancellationToken)
@@ -31,6 +31,8 @@ public class GetMyTenantQueryHandler(IApplicationDbContext db, ITenantContext te
             .Select(f => f.FeatureKey)
             .ToArrayAsync(cancellationToken);
 
+        var employees = await identityService.ListByTenantAsync(tenantId, cancellationToken);
+
         return new MyTenantDto(
             tenant.Id,
             tenant.Name,
@@ -39,6 +41,7 @@ public class GetMyTenantQueryHandler(IApplicationDbContext db, ITenantContext te
             plan.Name,
             plan.PriceUsd,
             plan.MaxEmployees,
+            employees.Count,
             subscription.Status.ToString(),
             subscription.StartedAt,
             subscription.CurrentPeriodEnd,

@@ -17,7 +17,9 @@ export function ProtectedRoute({ requireRole }: { requireRole?: string }) {
   }
 
   if (requireRole && !user.roles.includes(requireRole)) {
-    return <Navigate to="/login" replace />
+    // Autenticado pero sin el rol correcto (p. ej. un Employee entrando a una ruta de dueño):
+    // lo mandamos a un lugar válido para su rol, no al login (ya inició sesión).
+    return <Navigate to={user.tenantId ? '/dashboard' : '/login'} replace />
   }
 
   return <Outlet />

@@ -5,9 +5,10 @@ import { AgendaPage } from './features/appointments/AgendaPage'
 import { HistorialPage } from './features/appointments/HistorialPage'
 import { LoginPage } from './features/auth/LoginPage'
 import { RegisterPage } from './features/auth/RegisterPage'
-import { ROLE_PLATFORM_ADMIN } from './features/auth/types'
+import { ROLE_PLATFORM_ADMIN, ROLE_TENANT_OWNER } from './features/auth/types'
 import { ClientDetailPage } from './features/clients/ClientDetailPage'
 import { ClientsListPage } from './features/clients/ClientsListPage'
+import { EmployeesPage } from './features/employees/EmployeesPage'
 import { PetDetailPage } from './features/pets/PetDetailPage'
 import { PublicFormPage } from './features/public-form/PublicFormPage'
 import { ServicesPage } from './features/services/ServicesPage'
@@ -26,9 +27,13 @@ function App() {
         <Route path="/clientes" element={<ClientsListPage />} />
         <Route path="/clientes/:clientId" element={<ClientDetailPage />} />
         <Route path="/mascotas/:petId" element={<PetDetailPage />} />
-        <Route path="/servicios" element={<ServicesPage />} />
         <Route path="/agenda" element={<AgendaPage />} />
         <Route path="/historial" element={<HistorialPage />} />
+      </Route>
+
+      <Route element={<ProtectedRoute requireRole={ROLE_TENANT_OWNER} />}>
+        <Route path="/servicios" element={<ServicesPage />} />
+        <Route path="/empleados" element={<EmployeesPage />} />
       </Route>
 
       <Route element={<ProtectedRoute requireRole={ROLE_PLATFORM_ADMIN} />}>

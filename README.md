@@ -52,7 +52,7 @@ Las fotos y firmas del formulario público se guardan en `backend/src/Api/App_Da
 - [x] Fase 1 — Núcleo Multi-Tenant (Identity, resolución de tenant, Planes/Suscripciones simuladas, Platform Admin)
 - [x] Fase 2 — Clientes, Mascotas y Formulario Público
 - [x] Fase 3 — Agenda + Historial
-- [ ] Fase 4 — Empleados y Roles (feature gating por plan)
+- [x] Fase 4 — Empleados y Roles (feature gating por plan)
 - [ ] Fase 5 — Inventario + Caja
 - [ ] Fase 6 — Notificaciones + Fotos + Estadísticas
 - [ ] Fase 7 — Funcionalidades Pro (roles avanzados, API, dashboard avanzado, stubs de WhatsApp/dominio/facturación)

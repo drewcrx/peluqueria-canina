@@ -68,6 +68,26 @@ public class IdentityService(UserManager<ApplicationUser> userManager) : IIdenti
         return [.. roles];
     }
 
+    public async Task<IReadOnlyList<IdentityUserDto>> ListByTenantAsync(Guid tenantId, CancellationToken cancellationToken = default)
+    {
+        var users = await userManager.Users
+            .IgnoreQueryFilters()
+            .Where(u => u.TenantId == tenantId)
+            .OrderBy(u => u.FullName)
+            .ToListAsync(cancellationToken);
+
+        return [.. users.Select(u => ToDto(u)!)];
+    }
+
+    public async Task SetActiveAsync(Guid userId, bool isActive, CancellationToken cancellationToken = default)
+    {
+        var user = await FindEntityByIdAsync(userId, cancellationToken)
+            ?? throw new InvalidOperationException("Usuario no encontrado.");
+
+        user.IsActive = isActive;
+        await userManager.UpdateAsync(user);
+    }
+
     /// <summary>
     /// All lookups in this service go through here instead of UserManager.FindByIdAsync: these
     /// calls happen during login/registration/refresh, before the request's tenant context is

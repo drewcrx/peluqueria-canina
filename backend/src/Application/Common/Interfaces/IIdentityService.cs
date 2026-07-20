@@ -16,4 +16,6 @@ public interface IIdentityService
     Task<IdentityUserDto?> FindByIdAsync(Guid userId, CancellationToken cancellationToken = default);
     Task<bool> CheckPasswordAsync(Guid userId, string password, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<string>> GetRolesAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<IdentityUserDto>> ListByTenantAsync(Guid tenantId, CancellationToken cancellationToken = default);
+    Task SetActiveAsync(Guid userId, bool isActive, CancellationToken cancellationToken = default);
 }

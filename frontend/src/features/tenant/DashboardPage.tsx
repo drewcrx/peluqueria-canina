@@ -139,8 +139,8 @@ export function DashboardPage() {
                 />
                 <StatCard
                   icon={Users}
-                  label="Límite de empleados"
-                  value={tenant.maxEmployees ? `1 de ${tenant.maxEmployees}` : 'Ilimitado'}
+                  label="Empleados"
+                  value={tenant.maxEmployees ? `${tenant.employeeCount} de ${tenant.maxEmployees}` : `${tenant.employeeCount} · Ilimitado`}
                 />
               </motion.div>
 

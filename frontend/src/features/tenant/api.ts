@@ -8,6 +8,7 @@ export interface MyTenant {
   planName: string
   planPriceUsd: number
   maxEmployees: number | null
+  employeeCount: number
   subscriptionStatus: 'Trialing' | 'Active' | 'PastDue' | 'Cancelled'
   startedAt: string
   currentPeriodEnd: string
