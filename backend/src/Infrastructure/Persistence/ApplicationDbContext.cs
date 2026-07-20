@@ -20,6 +20,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<PlanFeature> PlanFeatures => Set<PlanFeature>();
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<Client> Clients => Set<Client>();
+    public DbSet<Breed> Breeds => Set<Breed>();
+    public DbSet<Pet> Pets => Set<Pet>();
+    public DbSet<Service> Services => Set<Service>();
+    public DbSet<IntakeSubmission> IntakeSubmissions => Set<IntakeSubmission>();
+    public DbSet<IntakeSubmissionService> IntakeSubmissionServices => Set<IntakeSubmissionService>();
+    public DbSet<Notification> Notifications => Set<Notification>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

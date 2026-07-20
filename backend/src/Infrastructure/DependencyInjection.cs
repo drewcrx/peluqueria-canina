@@ -8,6 +8,7 @@ using PeluqueriaSaas.Infrastructure.Identity;
 using PeluqueriaSaas.Infrastructure.Multitenancy;
 using PeluqueriaSaas.Infrastructure.Persistence;
 using PeluqueriaSaas.Infrastructure.Services;
+using PeluqueriaSaas.Infrastructure.Storage;
 
 namespace PeluqueriaSaas.Infrastructure;
 
@@ -45,6 +46,7 @@ public static class DependencyInjection
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IEntitlementService, EntitlementService>();
+        services.AddScoped<IFileStorage, LocalFileStorage>();
 
         return services;
     }

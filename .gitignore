@@ -3,6 +3,7 @@ backend/**/bin/
 backend/**/obj/
 *.user
 .vs/
+backend/src/Api/App_Data/
 
 # Node / Frontend
 frontend/node_modules/

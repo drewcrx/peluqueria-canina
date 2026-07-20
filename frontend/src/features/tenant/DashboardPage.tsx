@@ -3,7 +3,7 @@ import { AnimatePresence, motion, type Variants } from 'framer-motion'
 import { Calendar, Check, Copy, ExternalLink, Sparkles, Users } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { DashboardSkeleton } from '../../components/layout/DashboardSkeleton'
-import { Sidebar } from '../../components/layout/Sidebar'
+import { TenantShell } from '../../components/layout/TenantShell'
 import { useCountUp } from '../../lib/useCountUp'
 import { useAuth } from '../auth/AuthContext'
 import { getMyTenant, type MyTenant } from './api'
@@ -55,29 +55,25 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950">
-      <Sidebar planFeatures={tenant?.features} />
+    <TenantShell>
+      {/* Decorative background glow — subtle, purely visual */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <motion.div
+          className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-indigo-400/20 blur-3xl dark:bg-indigo-500/10"
+          animate={{ y: [0, 20, 0], x: [0, -10, 0] }}
+          transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="absolute top-40 -left-32 h-80 w-80 rounded-full bg-violet-400/10 blur-3xl dark:bg-violet-500/10"
+          animate={{ y: [0, -16, 0], x: [0, 12, 0] }}
+          transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      </div>
 
-      <main className="relative flex-1 overflow-y-auto">
-        {/* Decorative background glow — subtle, purely visual */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <motion.div
-            className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-indigo-400/20 blur-3xl dark:bg-indigo-500/10"
-            animate={{ y: [0, 20, 0], x: [0, -10, 0] }}
-            transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          <motion.div
-            className="absolute top-40 -left-32 h-80 w-80 rounded-full bg-violet-400/10 blur-3xl dark:bg-violet-500/10"
-            animate={{ y: [0, -16, 0], x: [0, 12, 0] }}
-            transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
-          />
-        </div>
+      {isLoading && <DashboardSkeleton />}
+      {isError && <p className="text-red-500">No se pudo cargar la información de tu peluquería.</p>}
 
-        <div className="relative mx-auto max-w-5xl px-8 py-10">
-          {isLoading && <DashboardSkeleton />}
-          {isError && <p className="text-red-500">No se pudo cargar la información de tu peluquería.</p>}
-
-          {tenant && (
+      {tenant && (
             <motion.div variants={containerVariants} initial="hidden" animate="show">
               <motion.div variants={itemVariants} className="mb-8">
                 <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">Hola, {firstName}</h1>
@@ -204,7 +200,7 @@ export function DashboardPage() {
                     </motion.button>
                   </div>
                   <p className="mt-3 text-xs text-slate-400 dark:text-slate-600">
-                    El formulario en sí llega en la Fase 2 — el enlace ya es tuyo desde hoy.
+                    Compártelo por WhatsApp o donde prefieras — cada envío crea el cliente y la mascota automáticamente.
                   </p>
                 </motion.div>
 
@@ -251,9 +247,7 @@ export function DashboardPage() {
               </div>
             </motion.div>
           )}
-        </div>
-      </main>
-    </div>
+    </TenantShell>
   )
 }
 

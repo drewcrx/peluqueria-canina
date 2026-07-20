@@ -16,6 +16,8 @@ public class RegisterTenantCommandHandler(
 {
     private static readonly TimeSpan TrialLength = TimeSpan.FromDays(14);
     private static readonly TimeSpan RefreshTokenLifetime = TimeSpan.FromDays(7);
+    private static readonly string[] DefaultServiceNames =
+        ["Baño", "Corte", "Baño + Corte", "Corte de uñas", "Desparasitación"];
 
     public async Task<AuthResultDto> Handle(RegisterTenantCommand request, CancellationToken cancellationToken)
     {
@@ -34,6 +36,10 @@ public class RegisterTenantCommandHandler(
 
         var subscription = Subscription.StartTrial(tenant.Id, basicPlan.Id, TrialLength);
         db.Subscriptions.Add(subscription);
+
+        // Servicios por defecto para que el formulario público tenga algo que mostrar desde el
+        // día uno — el dueño los edita o los reemplaza después desde el dashboard.
+        db.Services.AddRange(DefaultServiceNames.Select(name => Service.Create(tenant.Id, name)));
 
         // El usuario se crea al final: UserManager guarda internamente vía el mismo DbContext,
         // por lo que este SaveChanges implícito persiste Tenant + Subscription + User en una sola

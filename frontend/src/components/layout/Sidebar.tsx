@@ -1,8 +1,11 @@
+import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
 import { Lock, LogOut, Sparkles } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../features/auth/AuthContext'
+import { getMyTenant } from '../../features/tenant/api'
 import { CORE_NAV_ITEMS, PREMIUM_NAV_ITEMS, type NavItem } from './navItems'
+import { NotificationBell } from './NotificationBell'
 
 function initials(name: string) {
   return name
@@ -53,8 +56,10 @@ function NavRow({ item, unlocked }: { item: NavItem; unlocked: boolean }) {
   )
 }
 
-export function Sidebar({ planFeatures }: { planFeatures: string[] | undefined }) {
+export function Sidebar() {
   const { user, logout } = useAuth()
+  const { data: tenant } = useQuery({ queryKey: ['my-tenant'], queryFn: getMyTenant, staleTime: 60_000 })
+  const planFeatures = tenant?.features
 
   return (
     <motion.aside
@@ -71,7 +76,8 @@ export function Sidebar({ planFeatures }: { planFeatures: string[] | undefined }
         >
           <Sparkles className="h-4.5 w-4.5" strokeWidth={2.5} />
         </motion.div>
-        <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">Peluquería SaaS</span>
+        <span className="flex-1 text-sm font-semibold text-slate-800 dark:text-slate-100">Peluquería SaaS</span>
+        <NotificationBell />
       </div>
 
       <nav className="flex-1 space-y-6 overflow-y-auto px-3 pb-4">

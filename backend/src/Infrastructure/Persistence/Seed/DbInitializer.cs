@@ -21,6 +21,7 @@ public static class DbInitializer
 
         await SeedRolesAsync(roleManager);
         await SeedPlansAsync(db, cancellationToken);
+        await SeedBreedsAsync(db, cancellationToken);
 
         if (isDevelopment)
         {
@@ -66,6 +67,25 @@ public static class DbInitializer
         }
 
         db.Plans.AddRange(basico, intermedio, pro);
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
+    private static async Task SeedBreedsAsync(ApplicationDbContext db, CancellationToken cancellationToken)
+    {
+        if (await db.Breeds.AnyAsync(cancellationToken))
+        {
+            return;
+        }
+
+        string[] breedNames =
+        [
+            "Labrador Retriever", "Golden Retriever", "Pastor Alemán", "Bulldog Francés", "Bulldog Inglés",
+            "Poodle (Caniche)", "Chihuahua", "Schnauzer", "Yorkshire Terrier", "Beagle", "Boxer",
+            "Husky Siberiano", "Rottweiler", "Shih Tzu", "Pug", "Dálmata", "Cocker Spaniel",
+            "Dachshund (Salchicha)", "Border Collie", "Pitbull", "Mestizo / Otra"
+        ];
+
+        db.Breeds.AddRange(breedNames.Select(Breed.Create));
         await db.SaveChangesAsync(cancellationToken);
     }
 

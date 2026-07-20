@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using PeluqueriaSaas.Application.Common;
 using PeluqueriaSaas.Application.Common.Exceptions;
 using PeluqueriaSaas.Application.Common.Interfaces;
 
@@ -10,8 +11,7 @@ public class GetMyTenantQueryHandler(IApplicationDbContext db, ITenantContext te
 {
     public async Task<MyTenantDto> Handle(GetMyTenantQuery request, CancellationToken cancellationToken)
     {
-        var tenantId = tenantContext.TenantId
-            ?? throw new AuthenticationException("Esta operación requiere una sesión de peluquería.");
+        var tenantId = tenantContext.RequireTenantId();
 
         var tenant = await db.Tenants.FirstOrDefaultAsync(t => t.Id == tenantId, cancellationToken)
             ?? throw new NotFoundException("Peluquería no encontrada.");

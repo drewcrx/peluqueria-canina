@@ -44,11 +44,13 @@ docker-compose.yml       PostgreSQL local
 
 > Nota: Postgres se expone en el puerto **5433** (no 5432) y el backend en **5273** (no 5000/5001) porque esta máquina ya tiene otros proyectos usando los puertos por defecto.
 
+Las fotos y firmas del formulario público se guardan en `backend/src/Api/App_Data/uploads/` (fuera de git) y se sirven desde `/uploads`. Es la implementación local de `IFileStorage`; Cloudinary se conecta después implementando la misma interfaz.
+
 ## Estado del roadmap
 
 - [x] Fase 0 — Setup (solución Clean Architecture, scaffold React, Docker Compose)
-- [ ] Fase 1 — Núcleo Multi-Tenant (Identity, resolución de tenant, Planes/Suscripciones simuladas, Platform Admin)
-- [ ] Fase 2 — Clientes, Mascotas y Formulario Público
+- [x] Fase 1 — Núcleo Multi-Tenant (Identity, resolución de tenant, Planes/Suscripciones simuladas, Platform Admin)
+- [x] Fase 2 — Clientes, Mascotas y Formulario Público
 - [ ] Fase 3 — Agenda + Historial
 - [ ] Fase 4 — Empleados y Roles (feature gating por plan)
 - [ ] Fase 5 — Inventario + Caja

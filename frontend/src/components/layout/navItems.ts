@@ -1,14 +1,4 @@
-import {
-  BarChart3,
-  Calendar,
-  ClipboardList,
-  LayoutDashboard,
-  Link2,
-  PackageSearch,
-  PawPrint,
-  Users,
-  Wallet,
-} from 'lucide-react'
+import { BarChart3, Calendar, ClipboardList, LayoutDashboard, PackageSearch, Scissors, Users, Wallet } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 export interface NavItem {
@@ -23,9 +13,8 @@ export interface NavItem {
 
 export const CORE_NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roadmapTag: 'Fase 1' },
-  { label: 'Clientes', icon: Users, roadmapTag: 'Fase 2' },
-  { label: 'Mascotas', icon: PawPrint, roadmapTag: 'Fase 2' },
-  { label: 'Formulario público', icon: Link2, roadmapTag: 'Fase 2' },
+  { label: 'Clientes', path: '/clientes', icon: Users, roadmapTag: 'Fase 2' },
+  { label: 'Servicios', path: '/servicios', icon: Scissors, roadmapTag: 'Fase 2' },
   { label: 'Agenda', icon: Calendar, roadmapTag: 'Fase 3' },
   { label: 'Historial', icon: ClipboardList, roadmapTag: 'Fase 3' },
 ]
