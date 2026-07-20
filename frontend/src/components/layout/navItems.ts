@@ -15,8 +15,8 @@ export const CORE_NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roadmapTag: 'Fase 1' },
   { label: 'Clientes', path: '/clientes', icon: Users, roadmapTag: 'Fase 2' },
   { label: 'Servicios', path: '/servicios', icon: Scissors, roadmapTag: 'Fase 2' },
-  { label: 'Agenda', icon: Calendar, roadmapTag: 'Fase 3' },
-  { label: 'Historial', icon: ClipboardList, roadmapTag: 'Fase 3' },
+  { label: 'Agenda', path: '/agenda', icon: Calendar, roadmapTag: 'Fase 3' },
+  { label: 'Historial', path: '/historial', icon: ClipboardList, roadmapTag: 'Fase 3' },
 ]
 
 export const PREMIUM_NAV_ITEMS: NavItem[] = [

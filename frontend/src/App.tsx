@@ -1,11 +1,14 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AdminTenantsPage } from './features/admin/AdminTenantsPage'
+import { AgendaPage } from './features/appointments/AgendaPage'
+import { HistorialPage } from './features/appointments/HistorialPage'
 import { LoginPage } from './features/auth/LoginPage'
 import { RegisterPage } from './features/auth/RegisterPage'
 import { ROLE_PLATFORM_ADMIN } from './features/auth/types'
 import { ClientDetailPage } from './features/clients/ClientDetailPage'
 import { ClientsListPage } from './features/clients/ClientsListPage'
+import { PetDetailPage } from './features/pets/PetDetailPage'
 import { PublicFormPage } from './features/public-form/PublicFormPage'
 import { ServicesPage } from './features/services/ServicesPage'
 import { DashboardPage } from './features/tenant/DashboardPage'
@@ -22,7 +25,10 @@ function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/clientes" element={<ClientsListPage />} />
         <Route path="/clientes/:clientId" element={<ClientDetailPage />} />
+        <Route path="/mascotas/:petId" element={<PetDetailPage />} />
         <Route path="/servicios" element={<ServicesPage />} />
+        <Route path="/agenda" element={<AgendaPage />} />
+        <Route path="/historial" element={<HistorialPage />} />
       </Route>
 
       <Route element={<ProtectedRoute requireRole={ROLE_PLATFORM_ADMIN} />}>

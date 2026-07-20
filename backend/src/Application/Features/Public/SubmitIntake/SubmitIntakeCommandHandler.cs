@@ -65,6 +65,11 @@ public class SubmitIntakeCommandHandler(IApplicationDbContext db, IFileStorage f
             tenant.Id, client.Id, pet.Id, request.Observations, photoUrls, signatureUrl, request.RequestedServiceIds);
         db.IntakeSubmissions.Add(submission);
 
+        // Sin fecha: aparece en la Agenda bajo "Por agendar" para que el dueño confirme cuándo.
+        var appointment = Appointment.Create(
+            tenant.Id, client.Id, pet.Id, scheduledAt: null, notes: request.Observations, request.RequestedServiceIds);
+        db.Appointments.Add(appointment);
+
         var notification = Notification.Create(
             tenant.Id, $"{client.FullName} registró a {pet.Name} a través del formulario público.");
         db.Notifications.Add(notification);

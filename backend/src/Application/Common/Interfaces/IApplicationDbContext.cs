@@ -17,6 +17,8 @@ public interface IApplicationDbContext
     DbSet<IntakeSubmission> IntakeSubmissions { get; }
     DbSet<IntakeSubmissionService> IntakeSubmissionServices { get; }
     DbSet<Notification> Notifications { get; }
+    DbSet<Appointment> Appointments { get; }
+    DbSet<AppointmentService> AppointmentServices { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

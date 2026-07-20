@@ -90,13 +90,17 @@ export function ClientDetailPage() {
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {client.pets.map((pet) => (
-                <div key={pet.id} className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+                <Link
+                  key={pet.id}
+                  to={`/mascotas/${pet.id}`}
+                  className="rounded-xl border border-slate-200 bg-white p-4 transition-colors hover:border-indigo-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-700"
+                >
                   <p className="font-medium text-slate-900 dark:text-slate-50">{pet.name}</p>
                   <p className="text-sm text-slate-500 dark:text-slate-400">
                     {pet.breedName} · {SEX_LABEL[pet.sex]}
                     {pet.ageYears != null && ` · ${pet.ageYears} años`}
                   </p>
-                </div>
+                </Link>
               ))}
             </div>
           )}

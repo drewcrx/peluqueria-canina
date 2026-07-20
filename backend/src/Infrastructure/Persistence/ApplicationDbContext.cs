@@ -27,6 +27,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<IntakeSubmission> IntakeSubmissions => Set<IntakeSubmission>();
     public DbSet<IntakeSubmissionService> IntakeSubmissionServices => Set<IntakeSubmissionService>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<Appointment> Appointments => Set<Appointment>();
+    public DbSet<AppointmentService> AppointmentServices => Set<AppointmentService>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
