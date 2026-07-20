@@ -1,0 +1,19 @@
+namespace PeluqueriaSaas.Application.Common.Interfaces;
+
+public record IdentityUserDto(Guid Id, string Email, string FullName, Guid? TenantId, bool IsActive);
+public record CreateUserResult(bool Succeeded, Guid? UserId, string[] Errors);
+
+/// <summary>
+/// Wraps ASP.NET Identity's UserManager/RoleManager behind primitive DTOs so Application
+/// never references the concrete ApplicationUser/ApplicationRole types, which live in
+/// Infrastructure (they depend on the Identity package — Domain and Application must not).
+/// </summary>
+public interface IIdentityService
+{
+    Task<CreateUserResult> CreateUserAsync(string email, string password, string fullName, Guid? tenantId, CancellationToken cancellationToken = default);
+    Task AddToRoleAsync(Guid userId, string role, CancellationToken cancellationToken = default);
+    Task<IdentityUserDto?> FindByEmailAsync(string email, CancellationToken cancellationToken = default);
+    Task<IdentityUserDto?> FindByIdAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<bool> CheckPasswordAsync(Guid userId, string password, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<string>> GetRolesAsync(Guid userId, CancellationToken cancellationToken = default);
+}
