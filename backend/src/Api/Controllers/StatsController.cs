@@ -12,8 +12,9 @@ namespace PeluqueriaSaas.Api.Controllers;
 public class StatsController(ISender mediator) : ControllerBase
 {
     [HttpGet("dashboard")]
-    public async Task<ActionResult<DashboardStatsDto>> GetDashboard(CancellationToken cancellationToken)
+    public async Task<ActionResult<DashboardStatsDto>> GetDashboard(
+        [FromQuery] DateOnly? fromDate, [FromQuery] DateOnly? toDate, CancellationToken cancellationToken)
     {
-        return Ok(await mediator.Send(new GetDashboardStatsQuery(), cancellationToken));
+        return Ok(await mediator.Send(new GetDashboardStatsQuery(fromDate, toDate), cancellationToken));
     }
 }

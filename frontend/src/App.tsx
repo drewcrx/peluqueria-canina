@@ -5,7 +5,8 @@ import { AgendaPage } from './features/appointments/AgendaPage'
 import { HistorialPage } from './features/appointments/HistorialPage'
 import { LoginPage } from './features/auth/LoginPage'
 import { RegisterPage } from './features/auth/RegisterPage'
-import { ROLE_PLATFORM_ADMIN, ROLE_TENANT_OWNER } from './features/auth/types'
+import { ROLE_MANAGER, ROLE_PLATFORM_ADMIN, ROLE_TENANT_OWNER } from './features/auth/types'
+import { SettingsPage } from './features/settings/SettingsPage'
 import { ClientDetailPage } from './features/clients/ClientDetailPage'
 import { ClientsListPage } from './features/clients/ClientsListPage'
 import { EmployeesPage } from './features/employees/EmployeesPage'
@@ -39,9 +40,13 @@ function App() {
         <Route path="/estadisticas" element={<StatsPage />} />
       </Route>
 
-      <Route element={<ProtectedRoute requireRole={ROLE_TENANT_OWNER} />}>
+      <Route element={<ProtectedRoute requireAnyRole={[ROLE_TENANT_OWNER, ROLE_MANAGER]} />}>
         <Route path="/servicios" element={<ServicesPage />} />
         <Route path="/empleados" element={<EmployeesPage />} />
+      </Route>
+
+      <Route element={<ProtectedRoute requireRole={ROLE_TENANT_OWNER} />}>
+        <Route path="/configuracion" element={<SettingsPage />} />
       </Route>
 
       <Route element={<ProtectedRoute requireRole={ROLE_PLATFORM_ADMIN} />}>

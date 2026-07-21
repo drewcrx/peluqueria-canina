@@ -26,7 +26,7 @@ const movementSchema = z.object({
 
 export function ProductsPage() {
   const { user } = useAuth()
-  const isOwner = user?.roles.includes('TenantOwner') ?? false
+  const isOwnerOrManager = user?.roles.some((r) => r === 'TenantOwner' || r === 'Manager') ?? false
   const [createOpen, setCreateOpen] = useState(false)
   const [movementProduct, setMovementProduct] = useState<Product | null>(null)
   const queryClient = useQueryClient()
@@ -64,7 +64,7 @@ export function ProductsPage() {
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">Inventario</h1>
           <p className="mt-1 text-slate-500 dark:text-slate-400">Productos y control de stock.</p>
         </div>
-        {isOwner && !isError && (
+        {isOwnerOrManager && !isError && (
           <button
             onClick={() => setCreateOpen(true)}
             className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"

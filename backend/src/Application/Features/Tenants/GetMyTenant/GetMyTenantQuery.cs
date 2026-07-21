@@ -16,4 +16,6 @@ public record MyTenantDto(
     string SubscriptionStatus,
     DateTime StartedAt,
     DateTime CurrentPeriodEnd,
-    string[] Features);
+    string[] Features,
+    string? WhatsAppNumber,
+    string? CustomDomainRequested);

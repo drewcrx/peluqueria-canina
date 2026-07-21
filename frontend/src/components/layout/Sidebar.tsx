@@ -63,7 +63,8 @@ export function Sidebar() {
   const { data: tenant } = useQuery({ queryKey: ['my-tenant'], queryFn: getMyTenant, staleTime: 60_000 })
   const planFeatures = tenant?.features
   const isOwner = user?.roles.includes('TenantOwner') ?? false
-  const visibleCoreItems = CORE_NAV_ITEMS.filter((item) => !item.ownerOnly || isOwner)
+  const isOwnerOrManager = isOwner || (user?.roles.includes('Manager') ?? false)
+  const visibleCoreItems = CORE_NAV_ITEMS.filter((item) => !item.ownerOnly || isOwnerOrManager)
 
   return (
     <motion.aside
@@ -98,7 +99,7 @@ export function Sidebar() {
           <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-600">
             Funcionalidades premium
           </p>
-          {PREMIUM_NAV_ITEMS.map((item) => (
+          {PREMIUM_NAV_ITEMS.filter((item) => !item.strictOwnerOnly || isOwner).map((item) => (
             <NavRow
               key={item.label}
               item={item}

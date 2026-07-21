@@ -33,7 +33,7 @@ public class ProductsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Policy = AuthorizationPolicies.TenantOwner)]
+    [Authorize(Policy = AuthorizationPolicies.OwnerOrManager)]
     public async Task<ActionResult<Guid>> Create(CreateProductRequest request, CancellationToken cancellationToken)
     {
         var id = await mediator.Send(
@@ -42,7 +42,7 @@ public class ProductsController(ISender mediator) : ControllerBase
     }
 
     [HttpPut("{productId:guid}")]
-    [Authorize(Policy = AuthorizationPolicies.TenantOwner)]
+    [Authorize(Policy = AuthorizationPolicies.OwnerOrManager)]
     public async Task<IActionResult> Update(Guid productId, UpdateProductRequest request, CancellationToken cancellationToken)
     {
         await mediator.Send(

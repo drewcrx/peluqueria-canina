@@ -2,7 +2,30 @@ import { useQuery } from '@tanstack/react-query'
 import { AlertTriangle, BarChart3, ListChecks, PawPrint, TrendingUp, UserPlus, Users } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { TenantShell } from '../../components/layout/TenantShell'
+import { getMyTenant } from '../tenant/api'
 import { getDashboardStats, type AppointmentStatusCount, type DailyCashFlow, type ServiceCount } from './api'
+
+type RangePreset = 'month' | '7' | '30' | '90'
+
+const RANGE_PRESETS: { value: RangePreset; label: string }[] = [
+  { value: 'month', label: 'Este mes' },
+  { value: '7', label: 'Últimos 7 días' },
+  { value: '30', label: 'Últimos 30 días' },
+  { value: '90', label: 'Últimos 90 días' },
+]
+
+function toIsoDate(d: Date) {
+  return d.toISOString().slice(0, 10)
+}
+
+function rangeForPreset(preset: RangePreset): { fromDate: string; toDate: string } | undefined {
+  if (preset === 'month') return undefined
+  const days = Number(preset)
+  const to = new Date()
+  const from = new Date()
+  from.setDate(from.getDate() - (days - 1))
+  return { fromDate: toIsoDate(from), toDate: toIsoDate(to) }
+}
 
 const STATUS_LABELS: Record<string, string> = {
   PendingSchedule: 'Por agendar',
@@ -29,14 +52,43 @@ function formatShortDate(iso: string) {
 }
 
 export function StatsPage() {
-  const { data: stats, isLoading, isError } = useQuery({ queryKey: ['dashboard-stats'], queryFn: getDashboardStats })
+  const [preset, setPreset] = useState<RangePreset>('month')
   const [showTable, setShowTable] = useState(false)
+  const { data: tenant } = useQuery({ queryKey: ['my-tenant'], queryFn: getMyTenant, staleTime: 60_000 })
+  const hasAdvancedDashboard = tenant?.features.includes('AdvancedDashboard') ?? false
+
+  const { data: stats, isLoading, isError } = useQuery({
+    queryKey: ['dashboard-stats', preset],
+    queryFn: () => getDashboardStats(rangeForPreset(preset)),
+  })
+
+  const periodLabel = RANGE_PRESETS.find((p) => p.value === preset)?.label ?? 'Este mes'
 
   return (
     <TenantShell>
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">Estadísticas</h1>
-        <p className="mt-1 text-slate-500 dark:text-slate-400">El pulso de tu negocio este mes.</p>
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">Estadísticas</h1>
+          <p className="mt-1 text-slate-500 dark:text-slate-400">El pulso de tu negocio — {periodLabel.toLowerCase()}.</p>
+        </div>
+
+        {hasAdvancedDashboard && (
+          <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+            {RANGE_PRESETS.map((p) => (
+              <button
+                key={p.value}
+                onClick={() => setPreset(p.value)}
+                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                  preset === p.value
+                    ? 'bg-indigo-600 text-white'
+                    : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {isLoading && <p className="text-slate-500 dark:text-slate-400">Cargando…</p>}
@@ -46,17 +98,17 @@ export function StatsPage() {
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             <StatTile icon={Users} label="Clientes totales" value={stats.totalClients.toLocaleString('es-EC')} />
-            <StatTile icon={UserPlus} label="Nuevos este mes" value={stats.newClientsThisMonth.toLocaleString('es-EC')} />
+            <StatTile icon={UserPlus} label="Nuevos" value={stats.newClientsInRange.toLocaleString('es-EC')} />
             <StatTile
               icon={PawPrint}
               label="Citas completadas"
-              value={stats.appointmentsCompletedThisMonth.toLocaleString('es-EC')}
+              value={stats.appointmentsCompletedInRange.toLocaleString('es-EC')}
             />
             <StatTile
               icon={TrendingUp}
-              label="Caja neta (mes)"
-              value={formatCurrency(stats.netCashThisMonth)}
-              tone={stats.netCashThisMonth >= 0 ? 'good' : 'warning'}
+              label="Caja neta"
+              value={formatCurrency(stats.netCashInRange)}
+              tone={stats.netCashInRange >= 0 ? 'good' : 'warning'}
             />
             <StatTile
               icon={AlertTriangle}
@@ -67,7 +119,7 @@ export function StatsPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <ChartCard icon={ListChecks} title="Estado de las citas">
+            <ChartCard icon={ListChecks} title="Estado de las citas" subtitle={periodLabel}>
               <StatusBarChart data={stats.appointmentsByStatus} />
             </ChartCard>
             <ChartCard icon={BarChart3} title="Servicios más solicitados" subtitle="Citas completadas">
@@ -75,8 +127,8 @@ export function StatsPage() {
             </ChartCard>
           </div>
 
-          <ChartCard icon={TrendingUp} title="Flujo de caja" subtitle="Últimos 30 días">
-            <CashFlowChart data={stats.cashFlowLast30Days} />
+          <ChartCard icon={TrendingUp} title="Flujo de caja" subtitle={periodLabel}>
+            <CashFlowChart data={stats.cashFlowByDay} />
           </ChartCard>
 
           <div>
@@ -291,7 +343,7 @@ function CashFlowChart({ data }: { data: DailyCashFlow[] }) {
           width="100%"
           style={{ aspectRatio: `${width} / ${height}` }}
           role="img"
-          aria-label="Flujo de caja de los últimos 30 días"
+          aria-label="Flujo de caja diario"
         >
           {yTicks.map((t) => (
             <g key={t}>
@@ -370,7 +422,7 @@ function EmptyState({ text }: { text: string }) {
 function StatsTable({
   stats,
 }: {
-  stats: { appointmentsByStatus: AppointmentStatusCount[]; topServices: ServiceCount[]; cashFlowLast30Days: DailyCashFlow[] }
+  stats: { appointmentsByStatus: AppointmentStatusCount[]; topServices: ServiceCount[]; cashFlowByDay: DailyCashFlow[] }
 }) {
   return (
     <div className="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -420,7 +472,7 @@ function StatsTable({
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-          {stats.cashFlowLast30Days.map((row) => (
+          {stats.cashFlowByDay.map((row) => (
             <tr key={row.date}>
               <td className="py-1.5 text-slate-700 dark:text-slate-300">{formatShortDate(row.date)}</td>
               <td className="py-1.5 text-right tabular-nums text-slate-900 dark:text-slate-50">{formatCurrency(row.income)}</td>

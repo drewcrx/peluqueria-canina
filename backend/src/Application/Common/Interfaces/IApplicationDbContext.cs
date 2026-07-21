@@ -24,6 +24,7 @@ public interface IApplicationDbContext
     DbSet<CashRegisterSession> CashRegisterSessions { get; }
     DbSet<CashTransaction> CashTransactions { get; }
     DbSet<AppointmentPhoto> AppointmentPhotos { get; }
+    DbSet<ApiKey> ApiKeys { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

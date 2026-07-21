@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -46,8 +47,22 @@ var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<
     ?? throw new InvalidOperationException("Falta la sección 'Jwt' en la configuración.");
 
 builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+    .AddAuthentication(options =>
+    {
+        options.DefaultScheme = "TenantAuth";
+        options.DefaultChallengeScheme = "TenantAuth";
+    })
+    // El SPA nunca manda X-Api-Key (usa la cookie), así que este scheme "router" solo desvía
+    // a ApiKey cuando el header está presente — el resto del tráfico sigue igual que siempre.
+    .AddPolicyScheme("TenantAuth", "JWT o API Key", options =>
+    {
+        options.ForwardDefaultSelector = context =>
+            context.Request.Headers.ContainsKey(ApiKeyAuthenticationDefaults.HeaderName)
+                ? ApiKeyAuthenticationDefaults.Scheme
+                : JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(ApiKeyAuthenticationDefaults.Scheme, _ => { })
+    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -84,6 +99,9 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy(AuthorizationPolicies.TenantOwner, policy => policy
         .RequireClaim("tenant_id")
         .RequireRole(RoleNames.TenantOwner));
+    options.AddPolicy(AuthorizationPolicies.OwnerOrManager, policy => policy
+        .RequireClaim("tenant_id")
+        .RequireRole(RoleNames.TenantOwner, RoleNames.Manager));
     options.AddPolicy(AuthorizationPolicies.PlatformAdmin, policy => policy.RequireRole(RoleNames.PlatformAdmin));
 });
 

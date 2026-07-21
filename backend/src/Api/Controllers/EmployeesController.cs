@@ -8,12 +8,12 @@ using PeluqueriaSaas.Application.Features.Employees.SetEmployeeActive;
 
 namespace PeluqueriaSaas.Api.Controllers;
 
-public record CreateEmployeeRequest(string FullName, string Email);
+public record CreateEmployeeRequest(string FullName, string Email, string Role);
 public record SetEmployeeActiveRequest(bool IsActive);
 
 [ApiController]
 [Route("api/employees")]
-[Authorize(Policy = AuthorizationPolicies.TenantOwner)]
+[Authorize(Policy = AuthorizationPolicies.OwnerOrManager)]
 public class EmployeesController(ISender mediator) : ControllerBase
 {
     [HttpGet]
@@ -25,7 +25,7 @@ public class EmployeesController(ISender mediator) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<CreateEmployeeResultDto>> Create(CreateEmployeeRequest request, CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(new CreateEmployeeCommand(request.FullName, request.Email), cancellationToken);
+        var result = await mediator.Send(new CreateEmployeeCommand(request.FullName, request.Email, request.Role), cancellationToken);
         return Ok(result);
     }
 

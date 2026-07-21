@@ -8,3 +8,4 @@ export interface AuthUser {
 
 export const ROLE_PLATFORM_ADMIN = 'PlatformAdmin'
 export const ROLE_TENANT_OWNER = 'TenantOwner'
+export const ROLE_MANAGER = 'Manager'

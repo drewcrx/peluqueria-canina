@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '../features/auth/AuthContext'
 
-export function ProtectedRoute({ requireRole }: { requireRole?: string }) {
+export function ProtectedRoute({ requireRole, requireAnyRole }: { requireRole?: string; requireAnyRole?: string[] }) {
   const { user, isLoading } = useAuth()
 
   if (isLoading) {
@@ -16,7 +16,10 @@ export function ProtectedRoute({ requireRole }: { requireRole?: string }) {
     return <Navigate to="/login" replace />
   }
 
-  if (requireRole && !user.roles.includes(requireRole)) {
+  const hasRequiredRole = requireRole ? user.roles.includes(requireRole) : true
+  const hasAnyRequiredRole = requireAnyRole ? requireAnyRole.some((r) => user.roles.includes(r)) : true
+
+  if (!hasRequiredRole || !hasAnyRequiredRole) {
     // Autenticado pero sin el rol correcto (p. ej. un Employee entrando a una ruta de dueño):
     // lo mandamos a un lugar válido para su rol, no al login (ya inició sesión).
     return <Navigate to={user.tenantId ? '/dashboard' : '/login'} replace />

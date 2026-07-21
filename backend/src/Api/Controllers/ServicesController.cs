@@ -13,7 +13,7 @@ public record UpdateServiceRequest(string Name, bool IsActive);
 
 [ApiController]
 [Route("api/services")]
-[Authorize(Policy = AuthorizationPolicies.TenantOwner)]
+[Authorize(Policy = AuthorizationPolicies.OwnerOrManager)]
 public class ServicesController(ISender mediator) : ControllerBase
 {
     [HttpGet]

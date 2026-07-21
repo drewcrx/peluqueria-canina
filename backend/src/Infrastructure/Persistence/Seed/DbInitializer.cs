@@ -31,7 +31,7 @@ public static class DbInitializer
 
     private static async Task SeedRolesAsync(RoleManager<IdentityRole<Guid>> roleManager)
     {
-        foreach (var role in new[] { RoleNames.PlatformAdmin, RoleNames.TenantOwner, RoleNames.Employee })
+        foreach (var role in new[] { RoleNames.PlatformAdmin, RoleNames.TenantOwner, RoleNames.Manager, RoleNames.Employee })
         {
             if (!await roleManager.RoleExistsAsync(role))
             {

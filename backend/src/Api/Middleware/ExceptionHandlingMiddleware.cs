@@ -29,6 +29,10 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
         {
             await WriteAsync(context, HttpStatusCode.Conflict, new { message = ex.Message });
         }
+        catch (ForbiddenException ex)
+        {
+            await WriteAsync(context, HttpStatusCode.Forbidden, new { message = ex.Message });
+        }
         catch (AuthenticationException ex)
         {
             await WriteAsync(context, HttpStatusCode.Unauthorized, new { message = ex.Message });

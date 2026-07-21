@@ -18,8 +18,8 @@ export async function listEmployees(): Promise<Employee[]> {
   return data
 }
 
-export async function createEmployee(fullName: string, email: string): Promise<CreateEmployeeResult> {
-  const { data } = await api.post<CreateEmployeeResult>('/employees', { fullName, email })
+export async function createEmployee(fullName: string, email: string, role: 'Employee' | 'Manager'): Promise<CreateEmployeeResult> {
+  const { data } = await api.post<CreateEmployeeResult>('/employees', { fullName, email, role })
   return data
 }
 

@@ -6,12 +6,23 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { Modal } from '../../components/Modal'
 import { TenantShell } from '../../components/layout/TenantShell'
+import { useAuth } from '../auth/AuthContext'
+import { ROLE_TENANT_OWNER } from '../auth/types'
 import { getMyTenant } from '../tenant/api'
 import { createEmployee, listEmployees, setEmployeeActive, type CreateEmployeeResult } from './api'
+
+const ROLE_LABELS: Record<string, string> = { TenantOwner: 'Dueño', Manager: 'Gerente', Employee: 'Empleado' }
+
+function roleLabel(roles: string[]) {
+  if (roles.includes('TenantOwner')) return ROLE_LABELS.TenantOwner
+  if (roles.includes('Manager')) return ROLE_LABELS.Manager
+  return ROLE_LABELS.Employee
+}
 
 const employeeSchema = z.object({
   fullName: z.string().min(2, 'Ingresa el nombre completo'),
   email: z.string().min(1, 'Requerido').email('Correo inválido'),
+  role: z.enum(['Employee', 'Manager']),
 })
 
 type EmployeeFormValues = z.infer<typeof employeeSchema>
@@ -21,19 +32,22 @@ export function EmployeesPage() {
   const [createdResult, setCreatedResult] = useState<CreateEmployeeResult | null>(null)
   const [copied, setCopied] = useState(false)
   const queryClient = useQueryClient()
+  const { user } = useAuth()
+  const isOwner = user?.roles.includes(ROLE_TENANT_OWNER) ?? false
 
   const { data: employees, isLoading } = useQuery({ queryKey: ['employees'], queryFn: listEmployees })
   const { data: tenant } = useQuery({ queryKey: ['my-tenant'], queryFn: getMyTenant })
+  const canAssignManager = isOwner && (tenant?.features.includes('AdvancedRoles') ?? false)
 
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<EmployeeFormValues>({ resolver: zodResolver(employeeSchema) })
+  } = useForm<EmployeeFormValues>({ resolver: zodResolver(employeeSchema), defaultValues: { role: 'Employee' } })
 
   const createMutation = useMutation({
-    mutationFn: (values: EmployeeFormValues) => createEmployee(values.fullName, values.email),
+    mutationFn: (values: EmployeeFormValues) => createEmployee(values.fullName, values.email, values.role),
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['employees'] })
       queryClient.invalidateQueries({ queryKey: ['my-tenant'] })
@@ -112,11 +126,9 @@ export function EmployeesPage() {
                 <tr key={employee.id} className="border-b border-slate-100 last:border-0 dark:border-slate-800">
                   <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-100">{employee.fullName}</td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{employee.email}</td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
-                    {employee.roles.includes('TenantOwner') ? 'Dueño' : 'Empleado'}
-                  </td>
+                  <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{roleLabel(employee.roles)}</td>
                   <td className="px-4 py-3">
-                    {employee.roles.includes('TenantOwner') ? (
+                    {employee.roles.includes('TenantOwner') || (employee.roles.includes('Manager') && !isOwner) ? (
                       <span className="text-xs text-slate-400 dark:text-slate-600">—</span>
                     ) : (
                       <button
@@ -149,6 +161,19 @@ export function EmployeesPage() {
             <input placeholder="Correo" {...register('email')} className={inputClass} />
             {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>}
           </div>
+
+          {canAssignManager && (
+            <div>
+              <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Rol</label>
+              <select {...register('role')} className={inputClass}>
+                <option value="Employee">Empleado</option>
+                <option value="Manager">Gerente</option>
+              </select>
+              <p className="mt-1 text-xs text-slate-400 dark:text-slate-600">
+                El Gerente también puede gestionar Servicios, Productos y Empleados.
+              </p>
+            </div>
+          )}
 
           {createMutation.isError && (
             <p className="text-sm text-red-500">

@@ -18,16 +18,17 @@ export interface DailyCashFlow {
 
 export interface DashboardStats {
   totalClients: number
-  newClientsThisMonth: number
-  appointmentsCompletedThisMonth: number
+  newClientsInRange: number
+  appointmentsCompletedInRange: number
   lowStockProductsCount: number
-  netCashThisMonth: number
+  netCashInRange: number
+  isCustomRange: boolean
   appointmentsByStatus: AppointmentStatusCount[]
   topServices: ServiceCount[]
-  cashFlowLast30Days: DailyCashFlow[]
+  cashFlowByDay: DailyCashFlow[]
 }
 
-export async function getDashboardStats(): Promise<DashboardStats> {
-  const { data } = await api.get<DashboardStats>('/stats/dashboard')
+export async function getDashboardStats(range?: { fromDate: string; toDate: string }): Promise<DashboardStats> {
+  const { data } = await api.get<DashboardStats>('/stats/dashboard', { params: range })
   return data
 }

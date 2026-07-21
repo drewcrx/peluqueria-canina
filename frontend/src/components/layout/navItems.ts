@@ -1,4 +1,4 @@
-import { BarChart3, Calendar, ClipboardList, LayoutDashboard, PackageSearch, Scissors, UserCog, Users, Wallet } from 'lucide-react'
+import { BarChart3, Calendar, ClipboardList, LayoutDashboard, PackageSearch, Scissors, Settings, UserCog, Users, Wallet } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 export interface NavItem {
@@ -7,8 +7,10 @@ export interface NavItem {
   icon: LucideIcon
   /** Feature key required from the plan catalog; undefined = included in every plan (Básico). */
   requiresFeature?: string
-  /** Only TenantOwner sees this item — hidden entirely for Employee (not just locked). */
+  /** TenantOwner or Manager see this item — hidden entirely for Employee (not just locked). */
   ownerOnly?: boolean
+  /** Only TenantOwner sees this item — hidden even for Manager (account/billing-level config). */
+  strictOwnerOnly?: boolean
   /** Shown as a small pill next to the label. */
   roadmapTag: string
 }
@@ -26,4 +28,12 @@ export const PREMIUM_NAV_ITEMS: NavItem[] = [
   { label: 'Inventario', path: '/inventario', icon: PackageSearch, requiresFeature: 'Inventory', roadmapTag: 'Fase 5' },
   { label: 'Caja', path: '/caja', icon: Wallet, requiresFeature: 'Caja', roadmapTag: 'Fase 5' },
   { label: 'Estadísticas', path: '/estadisticas', icon: BarChart3, requiresFeature: 'Stats', roadmapTag: 'Fase 6' },
+  {
+    label: 'Configuración',
+    path: '/configuracion',
+    icon: Settings,
+    requiresFeature: 'Api',
+    strictOwnerOnly: true,
+    roadmapTag: 'Fase 7',
+  },
 ]
