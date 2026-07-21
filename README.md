@@ -56,5 +56,5 @@ Las fotos y firmas del formulario público se guardan en `backend/src/Api/App_Da
 - [x] Fase 5 — Inventario + Caja
 - [x] Fase 6 — Notificaciones + Fotos + Estadísticas
 - [x] Fase 7 — Funcionalidades Pro (roles avanzados, API, dashboard avanzado, stubs de WhatsApp/dominio/facturación)
-- [ ] Fase 8 — Pulido UX + datos de demo
+- [x] Fase 8 — Pulido UX + datos de demo
 - [ ] Fase 9 (futuro) — Producción: pasarela de pago real, WhatsApp Cloud API real, Cloudinary, despliegue VPS

@@ -426,61 +426,67 @@ function StatsTable({
 }) {
   return (
     <div className="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-2">
-      <table className="w-full text-left text-sm">
-        <caption className="mb-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400">Citas por estado</caption>
-        <thead>
-          <tr className="text-xs text-slate-400 dark:text-slate-600">
-            <th className="pb-2 font-normal">Estado</th>
-            <th className="pb-2 text-right font-normal">Citas</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-          {stats.appointmentsByStatus.map((row) => (
-            <tr key={row.status}>
-              <td className="py-1.5 text-slate-700 dark:text-slate-300">{STATUS_LABELS[row.status] ?? row.status}</td>
-              <td className="py-1.5 text-right tabular-nums text-slate-900 dark:text-slate-50">{row.count}</td>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <caption className="mb-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400">Citas por estado</caption>
+          <thead>
+            <tr className="text-xs text-slate-400 dark:text-slate-600">
+              <th className="pb-2 font-normal">Estado</th>
+              <th className="pb-2 text-right font-normal">Citas</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            {stats.appointmentsByStatus.map((row) => (
+              <tr key={row.status}>
+                <td className="py-1.5 text-slate-700 dark:text-slate-300">{STATUS_LABELS[row.status] ?? row.status}</td>
+                <td className="py-1.5 text-right tabular-nums text-slate-900 dark:text-slate-50">{row.count}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-      <table className="w-full text-left text-sm">
-        <caption className="mb-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400">Servicios más solicitados</caption>
-        <thead>
-          <tr className="text-xs text-slate-400 dark:text-slate-600">
-            <th className="pb-2 font-normal">Servicio</th>
-            <th className="pb-2 text-right font-normal">Citas</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-          {stats.topServices.map((row) => (
-            <tr key={row.serviceName}>
-              <td className="py-1.5 text-slate-700 dark:text-slate-300">{row.serviceName}</td>
-              <td className="py-1.5 text-right tabular-nums text-slate-900 dark:text-slate-50">{row.count}</td>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <caption className="mb-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400">Servicios más solicitados</caption>
+          <thead>
+            <tr className="text-xs text-slate-400 dark:text-slate-600">
+              <th className="pb-2 font-normal">Servicio</th>
+              <th className="pb-2 text-right font-normal">Citas</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            {stats.topServices.map((row) => (
+              <tr key={row.serviceName}>
+                <td className="py-1.5 text-slate-700 dark:text-slate-300">{row.serviceName}</td>
+                <td className="py-1.5 text-right tabular-nums text-slate-900 dark:text-slate-50">{row.count}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-      <table className="w-full text-left text-sm lg:col-span-2">
-        <caption className="mb-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400">Flujo de caja diario</caption>
-        <thead>
-          <tr className="text-xs text-slate-400 dark:text-slate-600">
-            <th className="pb-2 font-normal">Fecha</th>
-            <th className="pb-2 text-right font-normal">Ingresos</th>
-            <th className="pb-2 text-right font-normal">Egresos</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-          {stats.cashFlowByDay.map((row) => (
-            <tr key={row.date}>
-              <td className="py-1.5 text-slate-700 dark:text-slate-300">{formatShortDate(row.date)}</td>
-              <td className="py-1.5 text-right tabular-nums text-slate-900 dark:text-slate-50">{formatCurrency(row.income)}</td>
-              <td className="py-1.5 text-right tabular-nums text-slate-900 dark:text-slate-50">{formatCurrency(row.expense)}</td>
+      <div className="overflow-x-auto lg:col-span-2">
+        <table className="w-full text-left text-sm">
+          <caption className="mb-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400">Flujo de caja diario</caption>
+          <thead>
+            <tr className="text-xs text-slate-400 dark:text-slate-600">
+              <th className="pb-2 font-normal">Fecha</th>
+              <th className="pb-2 text-right font-normal">Ingresos</th>
+              <th className="pb-2 text-right font-normal">Egresos</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            {stats.cashFlowByDay.map((row) => (
+              <tr key={row.date}>
+                <td className="py-1.5 text-slate-700 dark:text-slate-300">{formatShortDate(row.date)}</td>
+                <td className="py-1.5 text-right tabular-nums text-slate-900 dark:text-slate-50">{formatCurrency(row.income)}</td>
+                <td className="py-1.5 text-right tabular-nums text-slate-900 dark:text-slate-50">{formatCurrency(row.expense)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }

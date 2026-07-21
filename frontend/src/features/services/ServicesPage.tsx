@@ -2,11 +2,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Scissors } from 'lucide-react'
 import { useState } from 'react'
 import { TenantShell } from '../../components/layout/TenantShell'
+import { useToast } from '../../components/toast/ToastProvider'
+import { getErrorMessage } from '../../lib/getErrorMessage'
 import { createService, listServices, updateService, type ServiceItem } from './api'
 
 export function ServicesPage() {
   const [newName, setNewName] = useState('')
   const queryClient = useQueryClient()
+  const toast = useToast()
 
   const { data: services, isLoading } = useQuery({ queryKey: ['services'], queryFn: listServices })
 
@@ -18,11 +21,13 @@ export function ServicesPage() {
       setNewName('')
       invalidate()
     },
+    onError: (error) => toast.error(getErrorMessage(error, 'No se pudo crear el servicio.')),
   })
 
   const toggleMutation = useMutation({
     mutationFn: (service: ServiceItem) => updateService(service.id, service.name, !service.isActive),
     onSuccess: invalidate,
+    onError: (error) => toast.error(getErrorMessage(error, 'No se pudo actualizar el servicio.')),
   })
 
   return (

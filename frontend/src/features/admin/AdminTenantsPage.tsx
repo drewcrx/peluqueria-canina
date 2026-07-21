@@ -1,10 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useToast } from '../../components/toast/ToastProvider'
+import { getErrorMessage } from '../../lib/getErrorMessage'
 import { useAuth } from '../auth/AuthContext'
-import { activateSubscription, listTenants, setTenantStatus } from './api'
+import { activateSubscription, listTenants, seedDemoData, setTenantStatus } from './api'
 
 export function AdminTenantsPage() {
   const { user, logout } = useAuth()
   const queryClient = useQueryClient()
+  const toast = useToast()
 
   const { data: tenants, isLoading, isError } = useQuery({ queryKey: ['admin-tenants'], queryFn: listTenants })
 
@@ -13,11 +16,19 @@ export function AdminTenantsPage() {
   const statusMutation = useMutation({
     mutationFn: ({ tenantId, suspend }: { tenantId: string; suspend: boolean }) => setTenantStatus(tenantId, suspend),
     onSuccess: invalidate,
+    onError: (error) => toast.error(getErrorMessage(error, 'No se pudo actualizar el estado de la peluquería.')),
   })
 
   const activateMutation = useMutation({
     mutationFn: (tenantId: string) => activateSubscription(tenantId),
     onSuccess: invalidate,
+    onError: (error) => toast.error(getErrorMessage(error, 'No se pudo activar el pago.')),
+  })
+
+  const seedMutation = useMutation({
+    mutationFn: (tenantId: string) => seedDemoData(tenantId),
+    onSuccess: () => toast.success('Datos de demo generados.'),
+    onError: (error) => toast.error(getErrorMessage(error, 'No se pudo generar los datos de demo.')),
   })
 
   return (
@@ -73,6 +84,15 @@ export function AdminTenantsPage() {
                         }
                       >
                         {tenant.status === 'Active' ? 'Suspender' : 'Reactivar'}
+                      </button>
+                      <button
+                        className="text-emerald-600 hover:underline disabled:opacity-50"
+                        disabled={seedMutation.isPending}
+                        onClick={() => seedMutation.mutate(tenant.tenantId)}
+                      >
+                        {seedMutation.isPending && seedMutation.variables === tenant.tenantId
+                          ? 'Generando…'
+                          : 'Sembrar datos de demo'}
                       </button>
                     </td>
                   </tr>

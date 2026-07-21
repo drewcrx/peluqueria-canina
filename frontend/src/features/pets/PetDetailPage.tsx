@@ -3,6 +3,8 @@ import { ArrowLeft, Camera, ClipboardList, Loader2 } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { TenantShell } from '../../components/layout/TenantShell'
+import { useToast } from '../../components/toast/ToastProvider'
+import { getErrorMessage } from '../../lib/getErrorMessage'
 import { getMyTenant } from '../tenant/api'
 import { getPetHistory, uploadAppointmentPhoto } from './api'
 
@@ -24,6 +26,7 @@ function formatDate(iso: string) {
 export function PetDetailPage() {
   const { petId } = useParams<{ petId: string }>()
   const queryClient = useQueryClient()
+  const toast = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploadingFor, setUploadingFor] = useState<string | null>(null)
 
@@ -42,7 +45,10 @@ export function PetDetailPage() {
       setUploadingFor(null)
       queryClient.invalidateQueries({ queryKey: ['pet-history', petId] })
     },
-    onError: () => setUploadingFor(null),
+    onError: (error) => {
+      setUploadingFor(null)
+      toast.error(getErrorMessage(error, 'No se pudo subir la foto.'))
+    },
   })
 
   function triggerUpload(appointmentId: string) {

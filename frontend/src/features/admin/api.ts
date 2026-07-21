@@ -22,3 +22,7 @@ export async function setTenantStatus(tenantId: string, suspend: boolean): Promi
 export async function activateSubscription(tenantId: string): Promise<void> {
   await api.post(`/admin/tenants/${tenantId}/subscription`, { action: 'Activate' })
 }
+
+export async function seedDemoData(tenantId: string): Promise<void> {
+  await api.post(`/admin/tenants/${tenantId}/seed-demo-data`)
+}

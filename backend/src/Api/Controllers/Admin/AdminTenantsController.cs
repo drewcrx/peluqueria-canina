@@ -5,6 +5,7 @@ using PeluqueriaSaas.Api.Auth;
 using PeluqueriaSaas.Application.Features.Admin.Tenants.ChangeSubscription;
 using PeluqueriaSaas.Application.Features.Admin.Tenants.GetTenantDetail;
 using PeluqueriaSaas.Application.Features.Admin.Tenants.ListTenants;
+using PeluqueriaSaas.Application.Features.Admin.Tenants.SeedDemoData;
 using PeluqueriaSaas.Application.Features.Admin.Tenants.SetTenantStatus;
 
 namespace PeluqueriaSaas.Api.Controllers.Admin;
@@ -42,6 +43,13 @@ public class AdminTenantsController(ISender mediator) : ControllerBase
     public async Task<IActionResult> SetStatus(Guid tenantId, SetTenantStatusRequest request, CancellationToken cancellationToken)
     {
         await mediator.Send(new SetTenantStatusCommand(tenantId, request.Suspend), cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPost("{tenantId:guid}/seed-demo-data")]
+    public async Task<IActionResult> SeedDemoData(Guid tenantId, CancellationToken cancellationToken)
+    {
+        await mediator.Send(new SeedDemoDataCommand(tenantId), cancellationToken);
         return NoContent();
     }
 }

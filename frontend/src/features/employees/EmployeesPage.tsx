@@ -6,6 +6,8 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { Modal } from '../../components/Modal'
 import { TenantShell } from '../../components/layout/TenantShell'
+import { useToast } from '../../components/toast/ToastProvider'
+import { getErrorMessage } from '../../lib/getErrorMessage'
 import { useAuth } from '../auth/AuthContext'
 import { ROLE_TENANT_OWNER } from '../auth/types'
 import { getMyTenant } from '../tenant/api'
@@ -32,6 +34,7 @@ export function EmployeesPage() {
   const [createdResult, setCreatedResult] = useState<CreateEmployeeResult | null>(null)
   const [copied, setCopied] = useState(false)
   const queryClient = useQueryClient()
+  const toast = useToast()
   const { user } = useAuth()
   const isOwner = user?.roles.includes(ROLE_TENANT_OWNER) ?? false
 
@@ -60,6 +63,7 @@ export function EmployeesPage() {
   const statusMutation = useMutation({
     mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) => setEmployeeActive(id, isActive),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['employees'] }),
+    onError: (error) => toast.error(getErrorMessage(error, 'No se pudo cambiar el estado del empleado.')),
   })
 
   async function copyPassword() {

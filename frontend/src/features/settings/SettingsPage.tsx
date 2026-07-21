@@ -4,6 +4,8 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Modal } from '../../components/Modal'
 import { PlanUpgradePrompt } from '../../components/PlanUpgradePrompt'
 import { TenantShell } from '../../components/layout/TenantShell'
+import { useToast } from '../../components/toast/ToastProvider'
+import { getErrorMessage } from '../../lib/getErrorMessage'
 import { getMyTenant, updateCustomDomain, updateWhatsAppSettings } from '../tenant/api'
 import { generateApiKey, getApiKeyStatus } from './api'
 
@@ -71,6 +73,7 @@ function SectionCard({
 
 function ApiKeySection({ status }: { status: { hasActiveKey: boolean; maskedPreview: string | null; createdAt: string | null; lastUsedAt: string | null } }) {
   const queryClient = useQueryClient()
+  const toast = useToast()
   const [newKey, setNewKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
@@ -80,6 +83,7 @@ function ApiKeySection({ status }: { status: { hasActiveKey: boolean; maskedPrev
       setNewKey(rawKey)
       queryClient.invalidateQueries({ queryKey: ['api-key-status'] })
     },
+    onError: (error) => toast.error(getErrorMessage(error, 'No se pudo generar la clave de API.')),
   })
 
   async function copyKey() {
@@ -144,6 +148,7 @@ function ApiKeySection({ status }: { status: { hasActiveKey: boolean; maskedPrev
 function WhatsAppSection() {
   const { data: tenant } = useQuery({ queryKey: ['my-tenant'], queryFn: getMyTenant })
   const queryClient = useQueryClient()
+  const toast = useToast()
   const [value, setValue] = useState('')
   const [saved, setSaved] = useState(false)
 
@@ -158,6 +163,7 @@ function WhatsAppSection() {
       setSaved(true)
       setTimeout(() => setSaved(false), 1800)
     },
+    onError: (error) => toast.error(getErrorMessage(error, 'No se pudo guardar el número de WhatsApp.')),
   })
 
   return (
@@ -188,6 +194,7 @@ function WhatsAppSection() {
 function CustomDomainSection() {
   const { data: tenant } = useQuery({ queryKey: ['my-tenant'], queryFn: getMyTenant })
   const queryClient = useQueryClient()
+  const toast = useToast()
   const [value, setValue] = useState('')
   const [saved, setSaved] = useState(false)
 
@@ -202,6 +209,7 @@ function CustomDomainSection() {
       setSaved(true)
       setTimeout(() => setSaved(false), 1800)
     },
+    onError: (error) => toast.error(getErrorMessage(error, 'No se pudo guardar el dominio.')),
   })
 
   return (

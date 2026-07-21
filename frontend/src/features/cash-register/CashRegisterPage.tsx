@@ -7,6 +7,8 @@ import { z } from 'zod'
 import { Modal } from '../../components/Modal'
 import { PlanUpgradePrompt } from '../../components/PlanUpgradePrompt'
 import { TenantShell } from '../../components/layout/TenantShell'
+import { useToast } from '../../components/toast/ToastProvider'
+import { getErrorMessage } from '../../lib/getErrorMessage'
 import {
   addTransaction,
   closeSession,
@@ -34,6 +36,7 @@ export function CashRegisterPage() {
   const [closeOpen, setCloseOpen] = useState(false)
   const [closeResult, setCloseResult] = useState<CloseCashSessionResult | null>(null)
   const queryClient = useQueryClient()
+  const toast = useToast()
 
   const { data: session, isLoading, isError } = useQuery({ queryKey: ['cash-session'], queryFn: getCurrentSession, retry: false })
   const { data: history } = useQuery({ queryKey: ['cash-sessions'], queryFn: listSessions, enabled: !isError })
@@ -50,6 +53,7 @@ export function CashRegisterPage() {
       openForm.reset()
       invalidate()
     },
+    onError: (error) => toast.error(getErrorMessage(error, 'No se pudo abrir la caja.')),
   })
 
   const txForm = useForm({ resolver: zodResolver(transactionSchema), defaultValues: { type: 'Income' as const } })
@@ -71,6 +75,7 @@ export function CashRegisterPage() {
       setCloseResult(result)
       invalidate()
     },
+    onError: (error) => toast.error(getErrorMessage(error, 'No se pudo cerrar la caja.')),
   })
 
   return (

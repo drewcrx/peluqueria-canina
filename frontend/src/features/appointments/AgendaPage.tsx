@@ -5,6 +5,8 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Modal } from '../../components/Modal'
 import { TenantShell } from '../../components/layout/TenantShell'
+import { useToast } from '../../components/toast/ToastProvider'
+import { getErrorMessage } from '../../lib/getErrorMessage'
 import { getMyTenant } from '../tenant/api'
 import { changeAppointmentStatus, listAppointments, scheduleAppointment, sendAppointmentReminder, type AppointmentSummary } from './api'
 
@@ -18,6 +20,7 @@ function formatTime(iso: string) {
 
 export function AgendaPage() {
   const queryClient = useQueryClient()
+  const toast = useToast()
   const { data: appointments, isLoading } = useQuery({ queryKey: ['appointments'], queryFn: () => listAppointments() })
   const { data: tenant } = useQuery({ queryKey: ['my-tenant'], queryFn: getMyTenant, staleTime: 60_000 })
   const canRemind = tenant?.features.includes('Reminders') ?? false
@@ -32,16 +35,19 @@ export function AgendaPage() {
       setSchedulingId(null)
       invalidate()
     },
+    onError: (error) => toast.error(getErrorMessage(error, 'No se pudo confirmar la fecha de la cita.')),
   })
 
   const statusMutation = useMutation({
     mutationFn: ({ id, action }: { id: string; action: 'Complete' | 'Cancel' }) => changeAppointmentStatus(id, action),
     onSuccess: invalidate,
+    onError: (error) => toast.error(getErrorMessage(error, 'No se pudo actualizar la cita.')),
   })
 
   const reminderMutation = useMutation({
     mutationFn: (id: string) => sendAppointmentReminder(id),
     onSuccess: invalidate,
+    onError: (error) => toast.error(getErrorMessage(error, 'No se pudo enviar el recordatorio.')),
   })
 
   const pending = appointments?.filter((a) => a.status === 'PendingSchedule') ?? []

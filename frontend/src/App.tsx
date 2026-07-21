@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
+import { NotFoundRedirect } from './components/NotFoundRedirect'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AdminTenantsPage } from './features/admin/AdminTenantsPage'
 import { AgendaPage } from './features/appointments/AgendaPage'
@@ -53,7 +54,7 @@ function App() {
         <Route path="/admin" element={<AdminTenantsPage />} />
       </Route>
 
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<NotFoundRedirect />} />
     </Routes>
   )
 }
