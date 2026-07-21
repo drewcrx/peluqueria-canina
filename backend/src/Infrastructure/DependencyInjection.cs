@@ -48,6 +48,7 @@ public static class DependencyInjection
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IEntitlementService, EntitlementService>();
         services.AddScoped<IFileStorage, LocalFileStorage>();
+        services.AddScoped<INotificationSender, LogNotificationSender>();
 
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();

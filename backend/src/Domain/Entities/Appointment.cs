@@ -17,6 +17,7 @@ public class Appointment : BaseEntity, ITenantScoped
     public AppointmentStatus Status { get; private set; }
     public string? Notes { get; private set; }
     public DateTime? CompletedAt { get; private set; }
+    public DateTime? ReminderSentAt { get; private set; }
 
     private readonly List<AppointmentService> _requestedServices = [];
     public IReadOnlyCollection<AppointmentService> RequestedServices => _requestedServices.AsReadOnly();
@@ -55,6 +56,8 @@ public class Appointment : BaseEntity, ITenantScoped
     }
 
     public void Cancel() => Status = AppointmentStatus.Cancelled;
+
+    public void MarkReminderSent() => ReminderSentAt = DateTime.UtcNow;
 }
 
 public class AppointmentService

@@ -23,6 +23,7 @@ public interface IApplicationDbContext
     DbSet<StockMovement> StockMovements { get; }
     DbSet<CashRegisterSession> CashRegisterSessions { get; }
     DbSet<CashTransaction> CashTransactions { get; }
+    DbSet<AppointmentPhoto> AppointmentPhotos { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

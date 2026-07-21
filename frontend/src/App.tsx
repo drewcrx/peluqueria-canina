@@ -15,6 +15,7 @@ import { ProductDetailPage } from './features/products/ProductDetailPage'
 import { ProductsPage } from './features/products/ProductsPage'
 import { PublicFormPage } from './features/public-form/PublicFormPage'
 import { ServicesPage } from './features/services/ServicesPage'
+import { StatsPage } from './features/stats/StatsPage'
 import { DashboardPage } from './features/tenant/DashboardPage'
 
 function App() {
@@ -35,6 +36,7 @@ function App() {
         <Route path="/inventario" element={<ProductsPage />} />
         <Route path="/inventario/:productId" element={<ProductDetailPage />} />
         <Route path="/caja" element={<CashRegisterPage />} />
+        <Route path="/estadisticas" element={<StatsPage />} />
       </Route>
 
       <Route element={<ProtectedRoute requireRole={ROLE_TENANT_OWNER} />}>

@@ -40,6 +40,7 @@ public class ListAppointmentsQueryHandler(IApplicationDbContext db)
             x.Appointment.ScheduledAt,
             x.Appointment.Status.ToString(),
             x.Appointment.Notes,
+            x.Appointment.ReminderSentAt,
             [.. serviceNamesByAppointment.Where(s => s.AppointmentId == x.Appointment.Id).Select(s => s.ServiceName)]))];
     }
 }

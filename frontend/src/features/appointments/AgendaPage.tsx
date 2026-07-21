@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
-import { Calendar, Check, Clock, X } from 'lucide-react'
+import { BellRing, Calendar, Check, Clock, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Modal } from '../../components/Modal'
 import { TenantShell } from '../../components/layout/TenantShell'
-import { changeAppointmentStatus, listAppointments, scheduleAppointment, type AppointmentSummary } from './api'
+import { getMyTenant } from '../tenant/api'
+import { changeAppointmentStatus, listAppointments, scheduleAppointment, sendAppointmentReminder, type AppointmentSummary } from './api'
 
 function formatDay(iso: string) {
   return new Intl.DateTimeFormat('es-EC', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(iso))
@@ -18,6 +19,8 @@ function formatTime(iso: string) {
 export function AgendaPage() {
   const queryClient = useQueryClient()
   const { data: appointments, isLoading } = useQuery({ queryKey: ['appointments'], queryFn: () => listAppointments() })
+  const { data: tenant } = useQuery({ queryKey: ['my-tenant'], queryFn: getMyTenant, staleTime: 60_000 })
+  const canRemind = tenant?.features.includes('Reminders') ?? false
   const [schedulingId, setSchedulingId] = useState<string | null>(null)
   const [dateTimeValue, setDateTimeValue] = useState('')
 
@@ -33,6 +36,11 @@ export function AgendaPage() {
 
   const statusMutation = useMutation({
     mutationFn: ({ id, action }: { id: string; action: 'Complete' | 'Cancel' }) => changeAppointmentStatus(id, action),
+    onSuccess: invalidate,
+  })
+
+  const reminderMutation = useMutation({
+    mutationFn: (id: string) => sendAppointmentReminder(id),
     onSuccess: invalidate,
   })
 
@@ -125,6 +133,20 @@ export function AgendaPage() {
                         </div>
                       </div>
                       <div className="flex gap-2">
+                        {canRemind && (
+                          <button
+                            onClick={() => reminderMutation.mutate(appt.id)}
+                            disabled={reminderMutation.isPending}
+                            title={appt.reminderSentAt ? `Recordatorio enviado ${formatTime(appt.reminderSentAt)}` : 'Enviar recordatorio'}
+                            className={`rounded-lg p-1.5 disabled:opacity-50 ${
+                              appt.reminderSentAt
+                                ? 'text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950'
+                                : 'text-slate-400 hover:bg-slate-100 hover:text-indigo-600 dark:hover:bg-slate-800'
+                            }`}
+                          >
+                            <BellRing className="h-4 w-4" />
+                          </button>
+                        )}
                         <button
                           onClick={() => statusMutation.mutate({ id: appt.id, action: 'Complete' })}
                           title="Marcar como completada"

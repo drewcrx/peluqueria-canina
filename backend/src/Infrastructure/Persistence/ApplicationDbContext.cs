@@ -33,6 +33,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<StockMovement> StockMovements => Set<StockMovement>();
     public DbSet<CashRegisterSession> CashRegisterSessions => Set<CashRegisterSession>();
     public DbSet<CashTransaction> CashTransactions => Set<CashTransaction>();
+    public DbSet<AppointmentPhoto> AppointmentPhotos => Set<AppointmentPhoto>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

@@ -29,13 +29,19 @@ public class GetPetHistoryQueryHandler(IApplicationDbContext db) : IRequestHandl
             .Join(db.Services, aps => aps.ServiceId, s => s.Id, (aps, s) => new { aps.AppointmentId, ServiceName = s.Name })
             .ToListAsync(cancellationToken);
 
+        var photosByAppointment = await db.AppointmentPhotos
+            .Where(p => appointmentIds.Contains(p.AppointmentId))
+            .Select(p => new { p.AppointmentId, p.PhotoUrl })
+            .ToListAsync(cancellationToken);
+
         var history = appointments.Select(a => new HistoryEntryDto(
             a.Id,
             a.ScheduledAt,
             a.Status.ToString(),
             a.Notes,
             a.CompletedAt,
-            [.. serviceNamesByAppointment.Where(s => s.AppointmentId == a.Id).Select(s => s.ServiceName)]))
+            [.. serviceNamesByAppointment.Where(s => s.AppointmentId == a.Id).Select(s => s.ServiceName)],
+            [.. photosByAppointment.Where(p => p.AppointmentId == a.Id).Select(p => p.PhotoUrl)]))
             .ToList();
 
         return new PetHistoryDto(

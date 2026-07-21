@@ -11,6 +11,7 @@ export interface AppointmentSummary {
   scheduledAt: string | null
   status: AppointmentStatus
   notes: string | null
+  reminderSentAt: string | null
   serviceNames: string[]
 }
 
@@ -36,4 +37,8 @@ export async function scheduleAppointment(appointmentId: string, scheduledAt: st
 
 export async function changeAppointmentStatus(appointmentId: string, action: 'Complete' | 'Cancel'): Promise<void> {
   await api.put(`/appointments/${appointmentId}/status`, { action })
+}
+
+export async function sendAppointmentReminder(appointmentId: string): Promise<void> {
+  await api.post(`/appointments/${appointmentId}/reminder`)
 }

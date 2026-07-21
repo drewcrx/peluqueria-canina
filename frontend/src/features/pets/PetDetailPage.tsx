@@ -1,8 +1,10 @@
-import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, ClipboardList } from 'lucide-react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { ArrowLeft, Camera, ClipboardList, Loader2 } from 'lucide-react'
+import { useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { TenantShell } from '../../components/layout/TenantShell'
-import { getPetHistory } from './api'
+import { getMyTenant } from '../tenant/api'
+import { getPetHistory, uploadAppointmentPhoto } from './api'
 
 const SEX_LABEL: Record<string, string> = { Male: 'Macho', Female: 'Hembra' }
 
@@ -21,12 +23,42 @@ function formatDate(iso: string) {
 
 export function PetDetailPage() {
   const { petId } = useParams<{ petId: string }>()
+  const queryClient = useQueryClient()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploadingFor, setUploadingFor] = useState<string | null>(null)
 
   const { data: pet, isLoading } = useQuery({
     queryKey: ['pet-history', petId],
     queryFn: () => getPetHistory(petId!),
     enabled: Boolean(petId),
   })
+
+  const { data: tenant } = useQuery({ queryKey: ['my-tenant'], queryFn: getMyTenant, staleTime: 60_000 })
+  const canUploadPhotos = tenant?.features.includes('Photos') ?? false
+
+  const uploadMutation = useMutation({
+    mutationFn: ({ appointmentId, photo }: { appointmentId: string; photo: File }) => uploadAppointmentPhoto(appointmentId, photo),
+    onSuccess: () => {
+      setUploadingFor(null)
+      queryClient.invalidateQueries({ queryKey: ['pet-history', petId] })
+    },
+    onError: () => setUploadingFor(null),
+  })
+
+  function triggerUpload(appointmentId: string) {
+    setUploadingFor(appointmentId)
+    fileInputRef.current?.click()
+  }
+
+  function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (file && uploadingFor) {
+      uploadMutation.mutate({ appointmentId: uploadingFor, photo: file })
+    } else {
+      setUploadingFor(null)
+    }
+  }
 
   return (
     <TenantShell>
@@ -81,12 +113,43 @@ export function PetDetailPage() {
                     <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{entry.serviceNames.join(', ')}</p>
                   )}
                   {entry.notes && <p className="mt-1 text-sm text-slate-400 dark:text-slate-500">{entry.notes}</p>}
+
+                  {entry.photoUrls.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {entry.photoUrls.map((url) => (
+                        <a key={url} href={url} target="_blank" rel="noreferrer">
+                          <img
+                            src={url}
+                            alt="Foto de la visita"
+                            className="h-16 w-16 rounded-lg object-cover ring-1 ring-slate-200 dark:ring-slate-700"
+                          />
+                        </a>
+                      ))}
+                    </div>
+                  )}
+
+                  {canUploadPhotos && (
+                    <button
+                      onClick={() => triggerUpload(entry.id)}
+                      disabled={uploadMutation.isPending && uploadingFor === entry.id}
+                      className="mt-3 flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-700 disabled:opacity-50 dark:text-indigo-400"
+                    >
+                      {uploadMutation.isPending && uploadingFor === entry.id ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Camera className="h-3.5 w-3.5" />
+                      )}
+                      Agregar foto
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
           )}
         </>
       )}
+
+      <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelected} />
     </TenantShell>
   )
 }

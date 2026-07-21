@@ -13,4 +13,5 @@ public record AppointmentSummaryDto(
     DateTime? ScheduledAt,
     string Status,
     string? Notes,
+    DateTime? ReminderSentAt,
     IReadOnlyList<string> ServiceNames);

@@ -5,7 +5,13 @@ namespace PeluqueriaSaas.Application.Features.Pets.GetPetHistory;
 public record GetPetHistoryQuery(Guid PetId) : IRequest<PetHistoryDto>;
 
 public record HistoryEntryDto(
-    Guid Id, DateTime? ScheduledAt, string Status, string? Notes, DateTime? CompletedAt, IReadOnlyList<string> ServiceNames);
+    Guid Id,
+    DateTime? ScheduledAt,
+    string Status,
+    string? Notes,
+    DateTime? CompletedAt,
+    IReadOnlyList<string> ServiceNames,
+    IReadOnlyList<string> PhotoUrls);
 
 public record PetHistoryDto(
     Guid PetId,

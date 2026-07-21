@@ -7,6 +7,7 @@ export interface HistoryEntry {
   notes: string | null
   completedAt: string | null
   serviceNames: string[]
+  photoUrls: string[]
 }
 
 export interface PetHistory {
@@ -27,5 +28,12 @@ export interface PetHistory {
 
 export async function getPetHistory(petId: string): Promise<PetHistory> {
   const { data } = await api.get<PetHistory>(`/pets/${petId}/history`)
+  return data
+}
+
+export async function uploadAppointmentPhoto(appointmentId: string, photo: File): Promise<string> {
+  const form = new FormData()
+  form.append('Photo', photo)
+  const { data } = await api.post<string>(`/appointments/${appointmentId}/photos`, form)
   return data
 }
