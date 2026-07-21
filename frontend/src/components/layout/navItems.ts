@@ -23,7 +23,7 @@ export const CORE_NAV_ITEMS: NavItem[] = [
 ]
 
 export const PREMIUM_NAV_ITEMS: NavItem[] = [
-  { label: 'Inventario', icon: PackageSearch, requiresFeature: 'Inventory', roadmapTag: 'Fase 5' },
-  { label: 'Caja', icon: Wallet, requiresFeature: 'Caja', roadmapTag: 'Fase 5' },
+  { label: 'Inventario', path: '/inventario', icon: PackageSearch, requiresFeature: 'Inventory', roadmapTag: 'Fase 5' },
+  { label: 'Caja', path: '/caja', icon: Wallet, requiresFeature: 'Caja', roadmapTag: 'Fase 5' },
   { label: 'Estadísticas', icon: BarChart3, requiresFeature: 'Stats', roadmapTag: 'Fase 6' },
 ]

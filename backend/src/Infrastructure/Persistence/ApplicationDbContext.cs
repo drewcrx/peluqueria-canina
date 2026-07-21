@@ -29,6 +29,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<Appointment> Appointments => Set<Appointment>();
     public DbSet<AppointmentService> AppointmentServices => Set<AppointmentService>();
+    public DbSet<Product> Products => Set<Product>();
+    public DbSet<StockMovement> StockMovements => Set<StockMovement>();
+    public DbSet<CashRegisterSession> CashRegisterSessions => Set<CashRegisterSession>();
+    public DbSet<CashTransaction> CashTransactions => Set<CashTransaction>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

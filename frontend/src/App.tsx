@@ -9,7 +9,10 @@ import { ROLE_PLATFORM_ADMIN, ROLE_TENANT_OWNER } from './features/auth/types'
 import { ClientDetailPage } from './features/clients/ClientDetailPage'
 import { ClientsListPage } from './features/clients/ClientsListPage'
 import { EmployeesPage } from './features/employees/EmployeesPage'
+import { CashRegisterPage } from './features/cash-register/CashRegisterPage'
 import { PetDetailPage } from './features/pets/PetDetailPage'
+import { ProductDetailPage } from './features/products/ProductDetailPage'
+import { ProductsPage } from './features/products/ProductsPage'
 import { PublicFormPage } from './features/public-form/PublicFormPage'
 import { ServicesPage } from './features/services/ServicesPage'
 import { DashboardPage } from './features/tenant/DashboardPage'
@@ -29,6 +32,9 @@ function App() {
         <Route path="/mascotas/:petId" element={<PetDetailPage />} />
         <Route path="/agenda" element={<AgendaPage />} />
         <Route path="/historial" element={<HistorialPage />} />
+        <Route path="/inventario" element={<ProductsPage />} />
+        <Route path="/inventario/:productId" element={<ProductDetailPage />} />
+        <Route path="/caja" element={<CashRegisterPage />} />
       </Route>
 
       <Route element={<ProtectedRoute requireRole={ROLE_TENANT_OWNER} />}>

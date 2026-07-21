@@ -18,7 +18,9 @@ function initials(name: string) {
 
 function NavRow({ item, unlocked }: { item: NavItem; unlocked: boolean }) {
   const Icon = item.icon
-  const isLive = Boolean(item.path)
+  // Un item con path pero sin "unlocked" ya está construido — el candado es por plan, no por
+  // fase del roadmap, así que nunca debe comportarse como link aunque tenga ruta.
+  const isLive = Boolean(item.path) && unlocked
 
   if (isLive) {
     return (
