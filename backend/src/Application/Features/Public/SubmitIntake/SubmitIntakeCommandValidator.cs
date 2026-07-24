@@ -1,11 +1,11 @@
 using FluentValidation;
+using PeluqueriaSaas.Application.Common;
 
 namespace PeluqueriaSaas.Application.Features.Public.SubmitIntake;
 
 public class SubmitIntakeCommandValidator : AbstractValidator<SubmitIntakeCommand>
 {
     private const int MaxPhotos = 6;
-    private static readonly string[] AllowedImageTypes = ["image/jpeg", "image/png", "image/webp"];
 
     public SubmitIntakeCommandValidator()
     {
@@ -17,8 +17,15 @@ public class SubmitIntakeCommandValidator : AbstractValidator<SubmitIntakeComman
         RuleFor(x => x.BreedId).NotEmpty();
         RuleFor(x => x.PetAgeYears).InclusiveBetween(0, 40).When(x => x.PetAgeYears.HasValue);
         RuleFor(x => x.PetWeightKg).InclusiveBetween(0.1m, 150m).When(x => x.PetWeightKg.HasValue);
+        RuleFor(x => x.PetColor).MaximumLength(60);
+        RuleFor(x => x.PetPhoto)
+            .Must(p => p is null || AllowedImageTypes.IsAllowed(p.ContentType, p.FileName))
+            .WithMessage("Solo se permiten imágenes JPG, PNG, WEBP o GIF.");
         RuleFor(x => x.Photos).Must(p => p.Count <= MaxPhotos).WithMessage($"Máximo {MaxPhotos} fotos.");
-        RuleForEach(x => x.Photos).Must(p => AllowedImageTypes.Contains(p.ContentType))
-            .WithMessage("Solo se permiten imágenes JPG, PNG o WEBP.");
+        RuleForEach(x => x.Photos).Must(p => AllowedImageTypes.IsAllowed(p.ContentType, p.FileName))
+            .WithMessage("Solo se permiten imágenes JPG, PNG, WEBP o GIF.");
+        RuleFor(x => x.Signature)
+            .Must(s => s is null || AllowedImageTypes.IsAllowed(s.ContentType, s.FileName))
+            .WithMessage("Firma inválida.");
     }
 }

@@ -23,6 +23,10 @@ export async function activateSubscription(tenantId: string): Promise<void> {
   await api.post(`/admin/tenants/${tenantId}/subscription`, { action: 'Activate' })
 }
 
+export async function changeTenantPlan(tenantId: string, newPlanCode: string): Promise<void> {
+  await api.post(`/admin/tenants/${tenantId}/subscription`, { action: 'Activate', newPlanCode })
+}
+
 export async function seedDemoData(tenantId: string): Promise<void> {
   await api.post(`/admin/tenants/${tenantId}/seed-demo-data`)
 }

@@ -9,7 +9,7 @@ export function NotFoundRedirect() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-slate-500 dark:text-slate-400">
+      <div className="flex min-h-screen items-center justify-center bg-cream text-ink-soft">
         Cargando…
       </div>
     )

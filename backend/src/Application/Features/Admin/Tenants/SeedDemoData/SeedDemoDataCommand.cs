@@ -61,7 +61,7 @@ public class SeedDemoDataCommandHandler(
             var pet = Pet.Create(
                 request.TenantId, client.Id, PetNames[random.Next(PetNames.Length)], breed.Id,
                 random.Next(2) == 0 ? PetSex.Male : PetSex.Female,
-                random.Next(1, 10), (decimal)random.Next(2, 40), null, null, null, null);
+                random.Next(1, 10), (decimal)random.Next(2, 40), null, null, null, null, null, null);
             db.Pets.Add(pet);
 
             seededPets.Add((client, pet));

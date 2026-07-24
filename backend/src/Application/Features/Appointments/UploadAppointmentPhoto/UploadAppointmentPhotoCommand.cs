@@ -1,3 +1,4 @@
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using PeluqueriaSaas.Application.Common;
@@ -11,6 +12,16 @@ public record UploadAppointmentPhotoCommand(Guid AppointmentId, StoredFile Photo
     : IRequest<string>, IFeatureGatedRequest
 {
     public string RequiredFeatureKey => FeatureKeys.Photos;
+}
+
+public class UploadAppointmentPhotoCommandValidator : AbstractValidator<UploadAppointmentPhotoCommand>
+{
+    public UploadAppointmentPhotoCommandValidator()
+    {
+        RuleFor(x => x.Photo)
+            .Must(p => AllowedImageTypes.IsAllowed(p.ContentType, p.FileName))
+            .WithMessage("Solo se permiten imágenes JPG, PNG, WEBP o GIF.");
+    }
 }
 
 public class UploadAppointmentPhotoCommandHandler(IApplicationDbContext db, IFileStorage fileStorage, ITenantContext tenantContext)

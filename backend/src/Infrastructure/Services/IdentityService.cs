@@ -7,6 +7,31 @@ namespace PeluqueriaSaas.Infrastructure.Services;
 
 public class IdentityService(UserManager<ApplicationUser> userManager) : IIdentityService
 {
+    /// <summary>
+    /// ASP.NET Identity's IdentityError.Description always comes back in English regardless of
+    /// server locale — there's no built-in Spanish IdentityErrorDescriber. Every one of these
+    /// bubbles up to a user-facing toast (see getErrorMessage.ts on the frontend), so an
+    /// untranslated "Incorrect password." next to an otherwise all-Spanish UI reads as broken,
+    /// not just informal. Translate by the stable .Code, falling back to the English text for any
+    /// code this list doesn't know about yet.
+    /// </summary>
+    private static string TranslateError(IdentityError error) => error.Code switch
+    {
+        "PasswordMismatch" => "La contraseña actual no es correcta.",
+        "PasswordTooShort" => "La contraseña debe tener al menos 8 caracteres.",
+        "PasswordRequiresDigit" => "La contraseña debe incluir al menos un número.",
+        "PasswordRequiresLower" => "La contraseña debe incluir al menos una minúscula.",
+        "PasswordRequiresUpper" => "La contraseña debe incluir al menos una mayúscula.",
+        "PasswordRequiresNonAlphanumeric" => "La contraseña debe incluir al menos un carácter especial.",
+        "PasswordRequiresUniqueChars" => "La contraseña necesita más caracteres distintos entre sí.",
+        "InvalidToken" => "El enlace no es válido o ya expiró.",
+        "DuplicateUserName" or "DuplicateEmail" => "Ya existe una cuenta con ese correo.",
+        "InvalidEmail" => "El correo no es válido.",
+        _ => error.Description,
+    };
+
+    private static string[] TranslateErrors(IEnumerable<IdentityError> errors) => [.. errors.Select(TranslateError)];
+
     public async Task<CreateUserResult> CreateUserAsync(
         string email, string password, string fullName, Guid? tenantId, CancellationToken cancellationToken = default)
     {
@@ -24,7 +49,7 @@ public class IdentityService(UserManager<ApplicationUser> userManager) : IIdenti
         return new CreateUserResult(
             result.Succeeded,
             result.Succeeded ? user.Id : null,
-            [.. result.Errors.Select(e => e.Description)]);
+            TranslateErrors(result.Errors));
     }
 
     public async Task AddToRoleAsync(Guid userId, string role, CancellationToken cancellationToken = default)
@@ -86,6 +111,44 @@ public class IdentityService(UserManager<ApplicationUser> userManager) : IIdenti
 
         user.IsActive = isActive;
         await userManager.UpdateAsync(user);
+    }
+
+    public async Task<PasswordOperationResult> ChangePasswordAsync(
+        Guid userId, string currentPassword, string newPassword, CancellationToken cancellationToken = default)
+    {
+        var user = await FindEntityByIdAsync(userId, cancellationToken);
+        if (user is null)
+        {
+            return new PasswordOperationResult(false, ["Usuario no encontrado."]);
+        }
+
+        var result = await userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+        return new PasswordOperationResult(result.Succeeded, TranslateErrors(result.Errors));
+    }
+
+    public async Task<string?> GeneratePasswordResetTokenAsync(string email, CancellationToken cancellationToken = default)
+    {
+        var user = await userManager.Users
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.NormalizedEmail == email.ToUpperInvariant(), cancellationToken);
+
+        return user is null ? null : await userManager.GeneratePasswordResetTokenAsync(user);
+    }
+
+    public async Task<PasswordOperationResult> ResetPasswordAsync(
+        string email, string token, string newPassword, CancellationToken cancellationToken = default)
+    {
+        var user = await userManager.Users
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.NormalizedEmail == email.ToUpperInvariant(), cancellationToken);
+
+        if (user is null)
+        {
+            return new PasswordOperationResult(false, ["Enlace inválido o expirado."]);
+        }
+
+        var result = await userManager.ResetPasswordAsync(user, token, newPassword);
+        return new PasswordOperationResult(result.Succeeded, TranslateErrors(result.Errors));
     }
 
     /// <summary>

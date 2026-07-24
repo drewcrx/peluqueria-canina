@@ -13,6 +13,8 @@ public class SubmitIntakeRequest
     public PetSex PetSex { get; set; }
     public int? PetAgeYears { get; set; }
     public decimal? PetWeightKg { get; set; }
+    public string? PetColor { get; set; }
+    public IFormFile? PetPhoto { get; set; }
     public string? Vaccines { get; set; }
     public string? Diseases { get; set; }
     public string? Medications { get; set; }

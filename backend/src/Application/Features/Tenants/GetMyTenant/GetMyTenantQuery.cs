@@ -18,4 +18,6 @@ public record MyTenantDto(
     DateTime CurrentPeriodEnd,
     string[] Features,
     string? WhatsAppNumber,
-    string? CustomDomainRequested);
+    string? CustomDomainRequested,
+    string? LogoUrl,
+    string? BrandColor);

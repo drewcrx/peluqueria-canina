@@ -15,6 +15,8 @@ public record SubmitIntakeCommand(
     PetSex PetSex,
     int? PetAgeYears,
     decimal? PetWeightKg,
+    string? PetColor,
+    StoredFile? PetPhoto,
     string? Vaccines,
     string? Diseases,
     string? Medications,

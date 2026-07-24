@@ -1,7 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
+import { ArrowRight, Sparkles } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
+import { authButtonClass, authInputClass, authLabelClass, AuthLayout } from './AuthLayout'
 import { useAuth } from './AuthContext'
 import { registerTenant } from './api'
 import { registerSchema, type RegisterFormValues } from './schemas'
@@ -25,73 +28,78 @@ export function RegisterPage() {
   })
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 px-4 py-10">
-      <div className="w-full max-w-md space-y-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">Registra tu peluquería</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">14 días de prueba gratis en el Plan Básico</p>
-        </div>
+    <AuthLayout
+      title="Registra tu peluquería"
+      subtitle="Crea tu cuenta y ten tu agenda funcionando en minutos."
+      eyebrow={
+        <span className="flex items-center gap-1.5">
+          <Sparkles size={13} className="text-clay-dark" />
+          14 días de prueba gratis en el Plan Básico
+        </span>
+      }
+      cardClassName="max-w-lg"
+      footer={
+        <>
+          ¿Ya tienes cuenta?{' '}
+          <Link to="/login" className="font-semibold text-clay-dark hover:underline">
+            Inicia sesión
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit((values) => mutation.mutate(values))} className="space-y-4">
+        <Field label="Nombre de la peluquería" error={errors.companyName?.message}>
+          <input {...register('companyName')} className={authInputClass} />
+        </Field>
 
-        <form
-          onSubmit={handleSubmit((values) => mutation.mutate(values))}
-          className="space-y-4 bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700"
-        >
-          <Field label="Nombre de la peluquería" error={errors.companyName?.message}>
-            <input {...register('companyName')} className={inputClass} />
-          </Field>
+        <Field label="Tu nombre completo" error={errors.ownerFullName?.message}>
+          <input {...register('ownerFullName')} className={authInputClass} />
+        </Field>
 
-          <Field label="Tu nombre completo" error={errors.ownerFullName?.message}>
-            <input {...register('ownerFullName')} className={inputClass} />
-          </Field>
+        <Field label="Correo" error={errors.ownerEmail?.message}>
+          <input type="email" {...register('ownerEmail')} className={authInputClass} />
+        </Field>
 
-          <Field label="Correo" error={errors.ownerEmail?.message}>
-            <input type="email" {...register('ownerEmail')} className={inputClass} />
-          </Field>
-
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Contraseña" error={errors.ownerPassword?.message}>
-            <input type="password" {...register('ownerPassword')} className={inputClass} />
+            <input type="password" {...register('ownerPassword')} className={authInputClass} />
           </Field>
 
           <Field label="Confirmar contraseña" error={errors.confirmPassword?.message}>
-            <input type="password" {...register('confirmPassword')} className={inputClass} />
+            <input type="password" {...register('confirmPassword')} className={authInputClass} />
           </Field>
+        </div>
 
-          {mutation.isError && (
-            <p className="text-sm text-red-500">
-              {(mutation.error as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-                'No se pudo completar el registro.'}
-            </p>
-          )}
+        {mutation.isError && (
+          <p className="text-sm text-red-600">
+            {(mutation.error as { response?: { data?: { message?: string } } })?.response?.data
+              ?.message ?? 'No se pudo completar el registro.'}
+          </p>
+        )}
 
-          <button
-            type="submit"
-            disabled={mutation.isPending}
-            className="w-full rounded-md bg-indigo-600 text-white py-2 text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
-          >
-            {mutation.isPending ? 'Creando cuenta…' : 'Crear cuenta'}
-          </button>
-        </form>
-
-        <p className="text-center text-sm text-slate-500 dark:text-slate-400">
-          ¿Ya tienes cuenta?{' '}
-          <Link to="/login" className="text-indigo-600 hover:underline">
-            Inicia sesión
-          </Link>
-        </p>
-      </div>
-    </div>
+        <button type="submit" disabled={mutation.isPending} className={`${authButtonClass} mt-2`}>
+          {mutation.isPending ? 'Creando cuenta…' : 'Crear cuenta'}
+          {!mutation.isPending && <ArrowRight size={16} />}
+        </button>
+      </form>
+    </AuthLayout>
   )
 }
 
-const inputClass =
-  'w-full rounded-md border border-slate-300 dark:border-slate-600 bg-transparent px-3 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500'
-
-function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
+function Field({
+  label,
+  error,
+  children,
+}: {
+  label: string
+  error?: string
+  children: ReactNode
+}) {
   return (
     <div>
-      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{label}</label>
+      <label className={authLabelClass}>{label}</label>
       {children}
-      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
   )
 }

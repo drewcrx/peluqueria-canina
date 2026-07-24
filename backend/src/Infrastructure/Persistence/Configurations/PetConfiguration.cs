@@ -12,6 +12,8 @@ public class PetConfiguration : IEntityTypeConfiguration<Pet>
         builder.Property(p => p.Name).IsRequired().HasMaxLength(100);
         builder.Property(p => p.Sex).HasConversion<string>().HasMaxLength(10);
         builder.Property(p => p.WeightKg).HasColumnType("decimal(5,2)");
+        builder.Property(p => p.Color).HasMaxLength(60);
+        builder.Property(p => p.PhotoUrl).HasMaxLength(500);
         builder.Property(p => p.Vaccines).HasMaxLength(500);
         builder.Property(p => p.Diseases).HasMaxLength(500);
         builder.Property(p => p.Medications).HasMaxLength(500);

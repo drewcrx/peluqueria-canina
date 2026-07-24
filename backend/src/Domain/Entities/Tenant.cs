@@ -13,6 +13,11 @@ public class Tenant : BaseEntity
     public string? WhatsAppNumber { get; private set; }
     public string? CustomDomainRequested { get; private set; }
 
+    // Identidad de marca del propio negocio — disponible en todos los planes, no es una
+    // funcionalidad premium (a diferencia de WhatsApp/dominio propio/API).
+    public string? LogoUrl { get; private set; }
+    public string? BrandColor { get; private set; }
+
     private Tenant() { }
 
     public static Tenant Create(string name, string publicFormSlug) => new()
@@ -27,4 +32,8 @@ public class Tenant : BaseEntity
 
     public void SetWhatsAppNumber(string? whatsAppNumber) => WhatsAppNumber = whatsAppNumber;
     public void SetCustomDomainRequested(string? customDomain) => CustomDomainRequested = customDomain;
+
+    public void Rename(string name) => Name = name;
+    public void SetLogoUrl(string? logoUrl) => LogoUrl = logoUrl;
+    public void SetBrandColor(string? brandColor) => BrandColor = brandColor;
 }

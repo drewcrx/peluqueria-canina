@@ -35,6 +35,8 @@ public class SubmitIntakeCommandHandler(IApplicationDbContext db, IFileStorage f
             db.Clients.Add(client);
         }
 
+        string? petPhotoUrl = request.PetPhoto is null ? null : await fileStorage.SaveAsync(tenant.Id, request.PetPhoto, cancellationToken);
+
         var pet = Pet.Create(
             tenant.Id,
             client.Id,
@@ -43,6 +45,8 @@ public class SubmitIntakeCommandHandler(IApplicationDbContext db, IFileStorage f
             request.PetSex,
             request.PetAgeYears,
             request.PetWeightKg,
+            request.PetColor,
+            petPhotoUrl,
             request.Vaccines,
             request.Diseases,
             request.Medications,

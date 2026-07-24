@@ -48,11 +48,11 @@ export function NotificationBell() {
     <div className="relative" ref={containerRef}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="relative rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+        className="relative rounded-lg p-2 text-ink-soft hover:bg-sand/60 hover:text-ink"
       >
         <Bell className="h-4.5 w-4.5" strokeWidth={2} />
         {unreadCount > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
+          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-clay-dark px-1 text-[10px] font-semibold text-cream">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -65,14 +65,14 @@ export function NotificationBell() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.97 }}
             transition={{ duration: 0.15 }}
-            className="absolute left-0 top-full z-20 mt-2 w-80 rounded-xl border border-slate-200 bg-white shadow-lg dark:border-slate-800 dark:bg-slate-900"
+            className="absolute left-0 top-full z-20 mt-2 w-80 rounded-2xl border border-sand-dark/60 bg-white shadow-premium"
           >
-            <div className="border-b border-slate-100 px-4 py-3 text-sm font-medium text-slate-700 dark:border-slate-800 dark:text-slate-200">
+            <div className="border-b border-sand-dark/60 px-4 py-3 text-sm font-medium text-ink">
               Notificaciones
             </div>
             <div className="max-h-80 overflow-y-auto">
               {!data || data.items.length === 0 ? (
-                <p className="px-4 py-6 text-center text-sm text-slate-400 dark:text-slate-600">
+                <p className="px-4 py-6 text-center text-sm text-ink-soft">
                   No hay notificaciones todavía.
                 </p>
               ) : (
@@ -80,12 +80,12 @@ export function NotificationBell() {
                   <button
                     key={item.id}
                     onClick={() => handleItemClick(item.id, item.isRead)}
-                    className="flex w-full items-start gap-2 border-b border-slate-50 px-4 py-3 text-left text-sm last:border-0 hover:bg-slate-50 dark:border-slate-800/60 dark:hover:bg-slate-800/60"
+                    className="flex w-full items-start gap-2 border-b border-sand-dark/40 px-4 py-3 text-left text-sm last:border-0 hover:bg-sand/40"
                   >
-                    {!item.isRead && <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500" />}
-                    <div className={item.isRead ? 'pl-3.5 text-slate-500 dark:text-slate-400' : 'text-slate-700 dark:text-slate-200'}>
+                    {!item.isRead && <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-clay" />}
+                    <div className={item.isRead ? 'pl-3.5 text-ink-soft' : 'text-ink'}>
                       <p>{item.message}</p>
-                      <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-600">{timeAgo(item.createdAt)}</p>
+                      <p className="mt-0.5 text-xs text-ink-soft">{timeAgo(item.createdAt)}</p>
                     </div>
                   </button>
                 ))

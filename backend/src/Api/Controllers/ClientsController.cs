@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PeluqueriaSaas.Api.Auth;
+using PeluqueriaSaas.Application.Common.Interfaces;
 using PeluqueriaSaas.Application.Features.Clients.CreateClient;
 using PeluqueriaSaas.Application.Features.Clients.GetClientDetail;
 using PeluqueriaSaas.Application.Features.Clients.ListClients;
@@ -12,16 +13,20 @@ namespace PeluqueriaSaas.Api.Controllers;
 
 public record CreateClientRequest(string FullName, string Phone, string? Email, string? Address);
 
-public record CreatePetRequest(
-    string Name,
-    Guid BreedId,
-    PetSex Sex,
-    int? AgeYears,
-    decimal? WeightKg,
-    string? Vaccines,
-    string? Diseases,
-    string? Medications,
-    string? Allergies);
+public class CreatePetRequest
+{
+    public string Name { get; set; } = default!;
+    public Guid BreedId { get; set; }
+    public PetSex Sex { get; set; }
+    public int? AgeYears { get; set; }
+    public decimal? WeightKg { get; set; }
+    public string? Color { get; set; }
+    public IFormFile? Photo { get; set; }
+    public string? Vaccines { get; set; }
+    public string? Diseases { get; set; }
+    public string? Medications { get; set; }
+    public string? Allergies { get; set; }
+}
 
 [ApiController]
 [Route("api/clients")]
@@ -49,12 +54,15 @@ public class ClientsController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("{clientId:guid}/pets")]
-    public async Task<ActionResult<Guid>> AddPet(Guid clientId, CreatePetRequest request, CancellationToken cancellationToken)
+    [RequestSizeLimit(5_000_000)]
+    public async Task<ActionResult<Guid>> AddPet(Guid clientId, [FromForm] CreatePetRequest request, CancellationToken cancellationToken)
     {
+        var photo = request.Photo is null ? null : new StoredFile(request.Photo.FileName, request.Photo.OpenReadStream(), request.Photo.ContentType);
+
         var id = await mediator.Send(
             new CreatePetCommand(
                 clientId, request.Name, request.BreedId, request.Sex, request.AgeYears, request.WeightKg,
-                request.Vaccines, request.Diseases, request.Medications, request.Allergies),
+                request.Color, photo, request.Vaccines, request.Diseases, request.Medications, request.Allergies),
             cancellationToken);
 
         return CreatedAtAction(nameof(GetDetail), new { clientId }, id);

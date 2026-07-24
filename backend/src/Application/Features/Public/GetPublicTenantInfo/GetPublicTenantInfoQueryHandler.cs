@@ -33,6 +33,6 @@ public class GetPublicTenantInfoQueryHandler(IApplicationDbContext db)
             .Select(s => new PublicServiceDto(s.Id, s.Name))
             .ToListAsync(cancellationToken);
 
-        return new PublicTenantInfoDto(tenant.Id, tenant.Name, breeds, services);
+        return new PublicTenantInfoDto(tenant.Id, tenant.Name, breeds, services, tenant.LogoUrl, tenant.BrandColor);
     }
 }

@@ -46,6 +46,7 @@ public class GetPetHistoryQueryHandler(IApplicationDbContext db) : IRequestHandl
 
         return new PetHistoryDto(
             pet.Id, pet.Name, breedName, pet.Sex.ToString(), pet.AgeYears, pet.WeightKg,
+            pet.Color, pet.PhotoUrl,
             pet.Vaccines, pet.Diseases, pet.Medications, pet.Allergies,
             client.FullName, client.Id, history);
     }

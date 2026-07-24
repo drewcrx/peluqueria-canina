@@ -6,6 +6,10 @@ import { Link } from 'react-router-dom'
 import { Modal } from '../../components/Modal'
 import { TenantShell } from '../../components/layout/TenantShell'
 import { useToast } from '../../components/toast/ToastProvider'
+import { Button } from '../../components/ui/Button'
+import { EmptyState } from '../../components/ui/EmptyState'
+import { PageHeader } from '../../components/ui/PageHeader'
+import { cardClass, inputClass } from '../../components/ui/styles'
 import { getErrorMessage } from '../../lib/getErrorMessage'
 import { getMyTenant } from '../tenant/api'
 import { changeAppointmentStatus, listAppointments, scheduleAppointment, sendAppointmentReminder, type AppointmentSummary } from './api'
@@ -63,16 +67,13 @@ export function AgendaPage() {
 
   return (
     <TenantShell>
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">Agenda</h1>
-        <p className="mt-1 text-slate-500 dark:text-slate-400">Citas por confirmar y próximas visitas.</p>
-      </div>
+      <PageHeader title="Agenda" subtitle="Citas por confirmar y próximas visitas." />
 
-      {isLoading && <p className="text-slate-500 dark:text-slate-400">Cargando…</p>}
+      {isLoading && <p className="text-ink-soft">Cargando…</p>}
 
       {pending.length > 0 && (
         <div className="mb-8">
-          <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">
+          <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-clay-dark">
             <Clock className="h-4 w-4" /> Por agendar ({pending.length})
           </h2>
           <div className="space-y-2">
@@ -80,20 +81,20 @@ export function AgendaPage() {
               <motion.div
                 key={appt.id}
                 layout
-                className="flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900 dark:bg-amber-950/40"
+                className="flex items-center justify-between rounded-2xl border border-gold/40 bg-gold/10 px-4 py-3"
               >
                 <div>
-                  <Link to={`/mascotas/${appt.petId}`} className="font-medium text-slate-800 hover:underline dark:text-slate-100">
+                  <Link to={`/mascotas/${appt.petId}`} className="font-medium text-ink hover:underline">
                     {appt.petName}
                   </Link>
-                  <span className="text-slate-500 dark:text-slate-400"> · {appt.clientFullName}</span>
+                  <span className="text-ink-soft"> · {appt.clientFullName}</span>
                   {appt.serviceNames.length > 0 && (
-                    <p className="text-xs text-slate-500 dark:text-slate-400">{appt.serviceNames.join(', ')}</p>
+                    <p className="text-xs text-ink-soft">{appt.serviceNames.join(', ')}</p>
                   )}
                 </div>
                 <button
                   onClick={() => setSchedulingId(appt.id)}
-                  className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700"
+                  className="rounded-full bg-clay px-3 py-1.5 text-xs font-medium text-cream hover:bg-clay-dark"
                 >
                   Confirmar fecha
                 </button>
@@ -104,37 +105,34 @@ export function AgendaPage() {
       )}
 
       <div>
-        <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-ink-soft">
           <Calendar className="h-4 w-4" /> Próximas citas
         </h2>
 
         {upcoming.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 py-12 text-center dark:border-slate-700">
-            <Calendar className="mb-3 h-8 w-8 text-slate-300 dark:text-slate-700" strokeWidth={1.5} />
-            <p className="text-slate-500 dark:text-slate-400">No tienes citas agendadas todavía.</p>
-          </div>
+          <EmptyState icon={Calendar} title="No tienes citas agendadas todavía." />
         ) : (
           <div className="space-y-6">
             {Object.entries(upcomingByDay).map(([day, appts]) => (
               <div key={day}>
-                <p className="mb-2 text-sm font-medium capitalize text-slate-600 dark:text-slate-300">{formatDay(appts[0].scheduledAt!)}</p>
+                <p className="mb-2 text-sm font-medium capitalize text-ink">{formatDay(appts[0].scheduledAt!)}</p>
                 <div className="space-y-2">
                   {appts.map((appt) => (
                     <div
                       key={appt.id}
-                      className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900"
+                      className={`flex items-center justify-between px-4 py-3 ${cardClass}`}
                     >
                       <div className="flex items-center gap-4">
-                        <span className="w-14 shrink-0 text-sm font-medium text-indigo-600 dark:text-indigo-400">
+                        <span className="w-14 shrink-0 text-sm font-medium text-clay-dark">
                           {formatTime(appt.scheduledAt!)}
                         </span>
                         <div>
-                          <Link to={`/mascotas/${appt.petId}`} className="font-medium text-slate-800 hover:underline dark:text-slate-100">
+                          <Link to={`/mascotas/${appt.petId}`} className="font-medium text-ink hover:underline">
                             {appt.petName}
                           </Link>
-                          <span className="text-slate-500 dark:text-slate-400"> · {appt.clientFullName}</span>
+                          <span className="text-ink-soft"> · {appt.clientFullName}</span>
                           {appt.serviceNames.length > 0 && (
-                            <p className="text-xs text-slate-500 dark:text-slate-400">{appt.serviceNames.join(', ')}</p>
+                            <p className="text-xs text-ink-soft">{appt.serviceNames.join(', ')}</p>
                           )}
                         </div>
                       </div>
@@ -146,8 +144,8 @@ export function AgendaPage() {
                             title={appt.reminderSentAt ? `Recordatorio enviado ${formatTime(appt.reminderSentAt)}` : 'Enviar recordatorio'}
                             className={`rounded-lg p-1.5 disabled:opacity-50 ${
                               appt.reminderSentAt
-                                ? 'text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950'
-                                : 'text-slate-400 hover:bg-slate-100 hover:text-indigo-600 dark:hover:bg-slate-800'
+                                ? 'text-clay-dark hover:bg-clay/10'
+                                : 'text-ink-soft hover:bg-sand/60 hover:text-clay-dark'
                             }`}
                           >
                             <BellRing className="h-4 w-4" />
@@ -156,14 +154,14 @@ export function AgendaPage() {
                         <button
                           onClick={() => statusMutation.mutate({ id: appt.id, action: 'Complete' })}
                           title="Marcar como completada"
-                          className="rounded-lg p-1.5 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950"
+                          className="rounded-lg p-1.5 text-sage-dark hover:bg-sage-light"
                         >
                           <Check className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => statusMutation.mutate({ id: appt.id, action: 'Cancel' })}
                           title="Cancelar"
-                          className="rounded-lg p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
+                          className="rounded-lg p-1.5 text-red-600 hover:bg-red-50"
                         >
                           <X className="h-4 w-4" />
                         </button>
@@ -183,17 +181,17 @@ export function AgendaPage() {
             type="datetime-local"
             value={dateTimeValue}
             onChange={(e) => setDateTimeValue(e.target.value)}
-            className="w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-600 dark:text-slate-100 dark:placeholder:text-slate-500"
+            className={inputClass}
           />
-          <button
+          <Button
             disabled={!dateTimeValue || scheduleMutation.isPending}
             onClick={() =>
               schedulingId && scheduleMutation.mutate({ id: schedulingId, scheduledAt: new Date(dateTimeValue).toISOString() })
             }
-            className="w-full rounded-md bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="w-full"
           >
             {scheduleMutation.isPending ? 'Guardando…' : 'Confirmar'}
-          </button>
+          </Button>
         </div>
       </Modal>
     </TenantShell>

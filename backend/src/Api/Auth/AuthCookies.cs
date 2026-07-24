@@ -16,11 +16,17 @@ public static class AuthCookies
     {
         var secure = !isDevelopment;
 
+        // SameSite=None solo es válido (y solo lo respetan los navegadores/webviews) junto con
+        // Secure — necesario para que la sesión funcione desde el origen distinto de la app
+        // empaquetada con Capacitor (capacitor://localhost / https://localhost) hacia el backend
+        // real. En Development seguimos en Lax porque ahí todo es same-origin vía el proxy de Vite.
+        var sameSite = secure ? SameSiteMode.None : SameSiteMode.Lax;
+
         response.Cookies.Append(AccessTokenCookie, result.AccessToken, new CookieOptions
         {
             HttpOnly = true,
             Secure = secure,
-            SameSite = SameSiteMode.Lax,
+            SameSite = sameSite,
             Expires = result.AccessTokenExpiresAt,
             Path = "/"
         });
@@ -29,7 +35,7 @@ public static class AuthCookies
         {
             HttpOnly = true,
             Secure = secure,
-            SameSite = SameSiteMode.Lax,
+            SameSite = sameSite,
             Expires = result.RefreshTokenExpiresAt,
             Path = "/api/auth"
         });

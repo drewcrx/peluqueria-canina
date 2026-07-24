@@ -7,7 +7,7 @@ using PeluqueriaSaas.Domain.Entities;
 
 namespace PeluqueriaSaas.Application.Features.Pets.CreatePet;
 
-public class CreatePetCommandHandler(IApplicationDbContext db, ITenantContext tenantContext)
+public class CreatePetCommandHandler(IApplicationDbContext db, IFileStorage fileStorage, ITenantContext tenantContext)
     : IRequestHandler<CreatePetCommand, Guid>
 {
     public async Task<Guid> Handle(CreatePetCommand request, CancellationToken cancellationToken)
@@ -20,6 +20,8 @@ public class CreatePetCommandHandler(IApplicationDbContext db, ITenantContext te
             throw new NotFoundException("Cliente no encontrado.");
         }
 
+        string? photoUrl = request.Photo is null ? null : await fileStorage.SaveAsync(tenantId, request.Photo, cancellationToken);
+
         var pet = Pet.Create(
             tenantId,
             request.ClientId,
@@ -28,6 +30,8 @@ public class CreatePetCommandHandler(IApplicationDbContext db, ITenantContext te
             request.Sex,
             request.AgeYears,
             request.WeightKg,
+            request.Color,
+            photoUrl,
             request.Vaccines,
             request.Diseases,
             request.Medications,

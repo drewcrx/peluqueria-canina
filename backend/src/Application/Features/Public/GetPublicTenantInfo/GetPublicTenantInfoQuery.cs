@@ -11,4 +11,6 @@ public record PublicTenantInfoDto(
     Guid TenantId,
     string TenantName,
     IReadOnlyList<PublicBreedDto> Breeds,
-    IReadOnlyList<PublicServiceDto> Services);
+    IReadOnlyList<PublicServiceDto> Services,
+    string? LogoUrl,
+    string? BrandColor);

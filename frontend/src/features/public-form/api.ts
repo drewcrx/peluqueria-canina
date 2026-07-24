@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { API_BASE_URL } from '../../lib/apiBaseUrl'
 
 export interface PublicBreed {
   id: string
@@ -15,11 +16,13 @@ export interface PublicTenantInfo {
   tenantName: string
   breeds: PublicBreed[]
   services: PublicService[]
+  logoUrl: string | null
+  brandColor: string | null
 }
 
 // Cliente propio (no el `api` compartido con withCredentials/refresh): este flujo es 100%
 // anónimo, sin sesión que renovar.
-const publicApi = axios.create({ baseURL: '/api' })
+const publicApi = axios.create({ baseURL: API_BASE_URL })
 
 export async function getPublicTenantInfo(slug: string): Promise<PublicTenantInfo> {
   const { data } = await publicApi.get<PublicTenantInfo>(`/public/tenants/${slug}`)
@@ -36,6 +39,8 @@ export interface SubmitIntakeInput {
   petSex: 'Male' | 'Female'
   petAgeYears?: number
   petWeightKg?: number
+  petColor?: string
+  petPhoto?: File | null
   vaccines?: string
   diseases?: string
   medications?: string
@@ -57,6 +62,8 @@ export async function submitIntake(slug: string, input: SubmitIntakeInput) {
   form.append('PetSex', input.petSex)
   if (input.petAgeYears != null) form.append('PetAgeYears', String(input.petAgeYears))
   if (input.petWeightKg != null) form.append('PetWeightKg', String(input.petWeightKg))
+  if (input.petColor) form.append('PetColor', input.petColor)
+  if (input.petPhoto) form.append('PetPhoto', input.petPhoto)
   if (input.vaccines) form.append('Vaccines', input.vaccines)
   if (input.diseases) form.append('Diseases', input.diseases)
   if (input.medications) form.append('Medications', input.medications)

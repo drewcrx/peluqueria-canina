@@ -1,8 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { PawPrint } from 'lucide-react'
 import { useToast } from '../../components/toast/ToastProvider'
+import { tableWrapClass, tdClass, thClass, trHoverClass } from '../../components/ui/styles'
 import { getErrorMessage } from '../../lib/getErrorMessage'
 import { useAuth } from '../auth/AuthContext'
-import { activateSubscription, listTenants, seedDemoData, setTenantStatus } from './api'
+import { activateSubscription, changeTenantPlan, listTenants, seedDemoData, setTenantStatus } from './api'
+
+const PLAN_OPTIONS = [
+  { code: 'basico', label: 'Básico' },
+  { code: 'intermedio', label: 'Intermedio' },
+  { code: 'pro', label: 'Pro' },
+]
 
 export function AdminTenantsPage() {
   const { user, logout } = useAuth()
@@ -31,53 +39,82 @@ export function AdminTenantsPage() {
     onError: (error) => toast.error(getErrorMessage(error, 'No se pudo generar los datos de demo.')),
   })
 
+  const planMutation = useMutation({
+    mutationFn: ({ tenantId, planCode }: { tenantId: string; planCode: string }) => changeTenantPlan(tenantId, planCode),
+    onSuccess: () => {
+      toast.success('Plan actualizado.')
+      invalidate()
+    },
+    onError: (error) => toast.error(getErrorMessage(error, 'No se pudo cambiar el plan.')),
+  })
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      <header className="border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-6 py-4 flex items-center justify-between">
-        <span className="font-semibold text-slate-800 dark:text-slate-100">Platform Admin</span>
-        <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
+    <div className="min-h-screen bg-cream">
+      <header className="flex items-center justify-between border-b border-sand-dark/60 bg-white/70 px-6 py-4 backdrop-blur-sm">
+        <div className="flex items-center gap-2">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-clay-dark text-cream shadow-soft">
+            <PawPrint className="h-4 w-4" strokeWidth={2.2} />
+          </span>
+          <span className="font-display font-semibold text-ink">
+            AUREA <span className="text-clay-dark">Pet Spa</span> · Platform Admin
+          </span>
+        </div>
+        <div className="flex items-center gap-4 text-sm text-ink-soft">
           <span>{user?.fullName}</span>
-          <button onClick={logout} className="text-indigo-600 hover:underline">
+          <button onClick={logout} className="font-medium text-clay-dark hover:underline">
             Cerrar sesión
           </button>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-6 py-10">
-        <h1 className="text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-6">Peluquerías registradas</h1>
+      <main className="mx-auto max-w-4xl px-6 py-10">
+        <h1 className="mb-6 font-display text-2xl font-medium tracking-tight text-ink">Peluquerías registradas</h1>
 
-        {isLoading && <p className="text-slate-500 dark:text-slate-400">Cargando…</p>}
-        {isError && <p className="text-red-500">No se pudo cargar la lista de peluquerías.</p>}
+        {isLoading && <p className="text-ink-soft">Cargando…</p>}
+        {isError && <p className="text-red-600">No se pudo cargar la lista de peluquerías.</p>}
 
         {tenants && (
-          <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
+          <div className={`overflow-x-auto ${tableWrapClass}`}>
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-sand-dark/60">
                 <tr>
-                  <th className="px-4 py-3 font-medium">Peluquería</th>
-                  <th className="px-4 py-3 font-medium">Estado</th>
-                  <th className="px-4 py-3 font-medium">Plan</th>
-                  <th className="px-4 py-3 font-medium">Suscripción</th>
-                  <th className="px-4 py-3 font-medium">Acciones</th>
+                  <th className={thClass}>Peluquería</th>
+                  <th className={thClass}>Estado</th>
+                  <th className={thClass}>Plan</th>
+                  <th className={thClass}>Suscripción</th>
+                  <th className={thClass}>Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {tenants.map((tenant) => (
-                  <tr key={tenant.tenantId} className="border-b border-slate-100 dark:border-slate-700 last:border-0">
-                    <td className="px-4 py-3 text-slate-800 dark:text-slate-100">{tenant.name}</td>
-                    <td className="px-4 py-3">{tenant.status}</td>
-                    <td className="px-4 py-3">{tenant.planCode}</td>
-                    <td className="px-4 py-3">{tenant.subscriptionStatus}</td>
-                    <td className="px-4 py-3 space-x-3">
+                  <tr key={tenant.tenantId} className={trHoverClass}>
+                    <td className={`${tdClass} font-medium`}>{tenant.name}</td>
+                    <td className={tdClass}>{tenant.status}</td>
+                    <td className={tdClass}>
+                      <select
+                        value={tenant.planCode}
+                        disabled={planMutation.isPending}
+                        onChange={(e) => planMutation.mutate({ tenantId: tenant.tenantId, planCode: e.target.value })}
+                        className="rounded-lg border border-sand-dark bg-white/70 px-2 py-1 text-sm text-ink disabled:opacity-50"
+                      >
+                        {PLAN_OPTIONS.map((plan) => (
+                          <option key={plan.code} value={plan.code}>
+                            {plan.label}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className={tdClass}>{tenant.subscriptionStatus}</td>
+                    <td className={`${tdClass} space-x-3`}>
                       <button
-                        className="text-indigo-600 hover:underline disabled:opacity-50"
+                        className="font-medium text-clay-dark hover:underline disabled:opacity-50"
                         disabled={activateMutation.isPending}
                         onClick={() => activateMutation.mutate(tenant.tenantId)}
                       >
                         Activar pago
                       </button>
                       <button
-                        className="text-amber-600 hover:underline disabled:opacity-50"
+                        className="font-medium text-amber-700 hover:underline disabled:opacity-50"
                         disabled={statusMutation.isPending}
                         onClick={() =>
                           statusMutation.mutate({ tenantId: tenant.tenantId, suspend: tenant.status === 'Active' })
@@ -86,7 +123,7 @@ export function AdminTenantsPage() {
                         {tenant.status === 'Active' ? 'Suspender' : 'Reactivar'}
                       </button>
                       <button
-                        className="text-emerald-600 hover:underline disabled:opacity-50"
+                        className="font-medium text-sage-dark hover:underline disabled:opacity-50"
                         disabled={seedMutation.isPending}
                         onClick={() => seedMutation.mutate(tenant.tenantId)}
                       >

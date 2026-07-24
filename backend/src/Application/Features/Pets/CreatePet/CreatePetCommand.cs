@@ -1,4 +1,5 @@
 using MediatR;
+using PeluqueriaSaas.Application.Common.Interfaces;
 using PeluqueriaSaas.Domain.Enums;
 
 namespace PeluqueriaSaas.Application.Features.Pets.CreatePet;
@@ -10,6 +11,8 @@ public record CreatePetCommand(
     PetSex Sex,
     int? AgeYears,
     decimal? WeightKg,
+    string? Color,
+    StoredFile? Photo,
     string? Vaccines,
     string? Diseases,
     string? Medications,

@@ -1,1 +1,38 @@
 @import "tailwindcss";
+
+@theme {
+  --font-display: "Fraunces", "Georgia", serif;
+  --font-sans: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+
+  /* AUREA — paleta pastel/beige unisex */
+  --color-cream: #fbf7f1;
+  --color-cream-dark: #f4ede2;
+  --color-sand: #ede1d1;
+  --color-sand-dark: #ddccb2;
+  --color-taupe: #a99a89;
+  --color-ink: #2a2620;
+  --color-ink-soft: #55493c;
+  --color-clay: #c17a56;
+  /* clay-dark/sage-dark deliberately darker than a straight brand-tint would suggest — validated
+     via WCAG contrast math (see conversation) so text/badges/buttons using them clear 4.5:1
+     against their typical backgrounds (cream, clay/15 tint, sage-light), not just against white. */
+  --color-clay-dark: #8d593f;
+  --color-clay-light: #e8b79a;
+  --color-sage: #7c9473;
+  --color-sage-dark: #455640;
+  --color-sage-light: #c3d0b9;
+  --color-gold: #c9a66b;
+
+  --shadow-premium: 0 1px 2px rgba(42, 38, 32, 0.04), 0 20px 40px -12px rgba(42, 38, 32, 0.18);
+  --shadow-soft: 0 1px 2px rgba(42, 38, 32, 0.03), 0 8px 24px -8px rgba(42, 38, 32, 0.1);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-cream);
+  color: var(--color-ink);
+}

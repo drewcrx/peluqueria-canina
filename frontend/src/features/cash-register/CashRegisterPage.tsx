@@ -8,6 +8,9 @@ import { Modal } from '../../components/Modal'
 import { PlanUpgradePrompt } from '../../components/PlanUpgradePrompt'
 import { TenantShell } from '../../components/layout/TenantShell'
 import { useToast } from '../../components/toast/ToastProvider'
+import { Button } from '../../components/ui/Button'
+import { PageHeader } from '../../components/ui/PageHeader'
+import { cardClass, inputClass, tableWrapClass, tdClass, thClass, trHoverClass } from '../../components/ui/styles'
 import { getErrorMessage } from '../../lib/getErrorMessage'
 import {
   addTransaction,
@@ -80,30 +83,23 @@ export function CashRegisterPage() {
 
   return (
     <TenantShell>
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">Caja</h1>
-        <p className="mt-1 text-slate-500 dark:text-slate-400">Control de efectivo del día.</p>
-      </div>
+      <PageHeader title="Caja" subtitle="Control de efectivo del día." />
 
-      {isLoading && <p className="text-slate-500 dark:text-slate-400">Cargando…</p>}
+      {isLoading && <p className="text-ink-soft">Cargando…</p>}
 
       {isError && <PlanUpgradePrompt feature="Caja" />}
 
       {!isLoading && !isError && !session && (
-        <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+        <div className={`p-6 ${cardClass}`}>
           <div className="mb-4 flex items-center gap-2">
-            <Wallet className="h-5 w-5 text-indigo-500" />
-            <h2 className="font-medium text-slate-900 dark:text-slate-50">No hay una caja abierta</h2>
+            <Wallet className="h-5 w-5 text-clay-dark" />
+            <h2 className="font-display font-medium text-ink">No hay una caja abierta</h2>
           </div>
           <form onSubmit={openForm.handleSubmit((v) => openMutation.mutate(v))} className="flex max-w-sm gap-2">
             <input type="number" step="0.01" placeholder="Monto inicial" {...openForm.register('openingAmount')} className={inputClass} />
-            <button
-              type="submit"
-              disabled={openMutation.isPending}
-              className="shrink-0 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-            >
+            <Button type="submit" variant="accent" disabled={openMutation.isPending} className="shrink-0">
               Abrir caja
-            </button>
+            </Button>
           </form>
         </div>
       )}
@@ -112,14 +108,14 @@ export function CashRegisterPage() {
         <>
           <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
             <StatCard label="Apertura" value={money(session.openingAmount)} />
-            <StatCard label="Ingresos" value={money(session.totalIncome)} tone="text-emerald-600 dark:text-emerald-400" />
-            <StatCard label="Egresos" value={money(session.totalExpense)} tone="text-red-500" />
+            <StatCard label="Ingresos" value={money(session.totalIncome)} tone="text-sage-dark" />
+            <StatCard label="Egresos" value={money(session.totalExpense)} tone="text-red-600" />
             <StatCard label="Esperado en caja" value={money(session.expectedAmount)} tone="font-semibold" />
           </div>
 
           <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-5">
-            <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-              <h2 className="mb-3 font-medium text-slate-900 dark:text-slate-50">Registrar movimiento</h2>
+            <div className={`lg:col-span-2 p-5 ${cardClass}`}>
+              <h2 className="mb-3 font-display font-medium text-ink">Registrar movimiento</h2>
               <form onSubmit={txForm.handleSubmit((v) => txMutation.mutate(v))} className="space-y-3">
                 <select {...txForm.register('type')} className={inputClass}>
                   <option value="Income">Ingreso</option>
@@ -127,45 +123,41 @@ export function CashRegisterPage() {
                 </select>
                 <input type="number" step="0.01" placeholder="Monto" {...txForm.register('amount')} className={inputClass} />
                 <input placeholder="Descripción (opcional)" {...txForm.register('description')} className={inputClass} />
-                {txMutation.isError && <p className="text-sm text-red-500">No se pudo registrar el movimiento.</p>}
-                <button
-                  type="submit"
-                  disabled={txMutation.isPending}
-                  className="w-full rounded-md bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-                >
+                {txMutation.isError && <p className="text-sm text-red-600">No se pudo registrar el movimiento.</p>}
+                <Button type="submit" disabled={txMutation.isPending} className="w-full">
                   Registrar
-                </button>
+                </Button>
               </form>
 
               <button
                 onClick={() => setCloseOpen(true)}
-                className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-md border border-slate-300 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-full border border-sand-dark bg-white/60 py-2 text-sm font-medium text-ink-soft hover:bg-sand/40"
               >
                 <Lock className="h-4 w-4" /> Cerrar caja
               </button>
             </div>
 
-            <div className="lg:col-span-3 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-              <h2 className="mb-3 font-medium text-slate-900 dark:text-slate-50">Movimientos de hoy</h2>
+            <div className={`lg:col-span-3 p-5 ${cardClass}`}>
+              <h2 className="mb-3 font-display font-medium text-ink">Movimientos de hoy</h2>
               {session.transactions.length === 0 ? (
-                <p className="text-sm text-slate-400 dark:text-slate-600">Sin movimientos todavía.</p>
+                <p className="text-sm text-ink-soft">Sin movimientos todavía.</p>
               ) : (
                 <div className="space-y-2">
                   {session.transactions.map((t) => (
-                    <div key={t.id} className="flex items-center justify-between border-b border-slate-100 pb-2 text-sm last:border-0 dark:border-slate-800">
+                    <div key={t.id} className="flex items-center justify-between border-b border-sand-dark/50 pb-2 text-sm last:border-0">
                       <div className="flex items-center gap-2">
                         {t.type === 'Income' ? (
-                          <ArrowUpCircle className="h-4 w-4 text-emerald-500" />
+                          <ArrowUpCircle className="h-4 w-4 text-sage-dark" />
                         ) : (
-                          <ArrowDownCircle className="h-4 w-4 text-red-500" />
+                          <ArrowDownCircle className="h-4 w-4 text-red-600" />
                         )}
-                        <span className="text-slate-700 dark:text-slate-200">{t.description || (t.type === 'Income' ? 'Ingreso' : 'Egreso')}</span>
+                        <span className="text-ink">{t.description || (t.type === 'Income' ? 'Ingreso' : 'Egreso')}</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className={t.type === 'Income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}>
+                        <span className={t.type === 'Income' ? 'text-sage-dark' : 'text-red-600'}>
                           {t.type === 'Income' ? '+' : '-'}{money(t.amount)}
                         </span>
-                        <span className="text-xs text-slate-400 dark:text-slate-600">{formatDate(t.createdAt)}</span>
+                        <span className="text-xs text-ink-soft">{formatDate(t.createdAt)}</span>
                       </div>
                     </div>
                   ))}
@@ -178,28 +170,28 @@ export function CashRegisterPage() {
 
       {history && history.length > 0 && (
         <div>
-          <h2 className="mb-3 font-medium text-slate-900 dark:text-slate-50">Cajas anteriores</h2>
-          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+          <h2 className="mb-3 font-display font-medium text-ink">Cajas anteriores</h2>
+          <div className={`overflow-x-auto ${tableWrapClass}`}>
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-slate-200 text-slate-500 dark:border-slate-800 dark:text-slate-400">
+              <thead className="border-b border-sand-dark/60">
                 <tr>
-                  <th className="px-4 py-3 font-medium">Cerrada</th>
-                  <th className="px-4 py-3 font-medium">Apertura</th>
-                  <th className="px-4 py-3 font-medium">Cierre</th>
-                  <th className="px-4 py-3 font-medium">Diferencia</th>
-                  <th className="px-4 py-3 font-medium">Responsable</th>
+                  <th className={thClass}>Cerrada</th>
+                  <th className={thClass}>Apertura</th>
+                  <th className={thClass}>Cierre</th>
+                  <th className={thClass}>Diferencia</th>
+                  <th className={thClass}>Responsable</th>
                 </tr>
               </thead>
               <tbody>
                 {history.map((s) => (
-                  <tr key={s.id} className="border-b border-slate-100 last:border-0 dark:border-slate-800">
-                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{s.closedAt ? formatDate(s.closedAt) : '—'}</td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{money(s.openingAmount)}</td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{s.closingAmount != null ? money(s.closingAmount) : '—'}</td>
-                    <td className={`px-4 py-3 ${s.difference && s.difference !== 0 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-slate-300'}`}>
+                  <tr key={s.id} className={trHoverClass}>
+                    <td className={tdClass}>{s.closedAt ? formatDate(s.closedAt) : '—'}</td>
+                    <td className={tdClass}>{money(s.openingAmount)}</td>
+                    <td className={tdClass}>{s.closingAmount != null ? money(s.closingAmount) : '—'}</td>
+                    <td className={`${tdClass} ${s.difference && s.difference !== 0 ? 'text-clay-dark' : ''}`}>
                       {s.difference != null ? money(s.difference) : '—'}
                     </td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{s.openedByName}</td>
+                    <td className={tdClass}>{s.openedByName}</td>
                   </tr>
                 ))}
               </tbody>
@@ -210,29 +202,25 @@ export function CashRegisterPage() {
 
       <Modal open={closeOpen} onClose={() => setCloseOpen(false)} title="Cerrar caja">
         <form onSubmit={closeForm.handleSubmit((v) => closeMutation.mutate(v))} className="space-y-3">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Monto esperado en caja: <strong>{session ? money(session.expectedAmount) : '—'}</strong>. Cuenta el efectivo real e
-            ingrésalo aquí.
+          <p className="text-sm text-ink-soft">
+            Monto esperado en caja: <strong className="text-ink">{session ? money(session.expectedAmount) : '—'}</strong>. Cuenta el
+            efectivo real e ingrésalo aquí.
           </p>
           <input type="number" step="0.01" placeholder="Monto contado" {...closeForm.register('closingAmount')} className={inputClass} />
-          <button
-            type="submit"
-            disabled={closeMutation.isPending}
-            className="w-full rounded-md bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-          >
+          <Button type="submit" disabled={closeMutation.isPending} className="w-full">
             Confirmar cierre
-          </button>
+          </Button>
         </form>
       </Modal>
 
       <Modal open={closeResult !== null} onClose={() => setCloseResult(null)} title="Caja cerrada">
         {closeResult && (
           <div className="space-y-2 text-sm">
-            <p className="flex justify-between"><span className="text-slate-500 dark:text-slate-400">Esperado</span> <span>{money(closeResult.expectedAmount)}</span></p>
-            <p className="flex justify-between"><span className="text-slate-500 dark:text-slate-400">Contado</span> <span>{money(closeResult.closingAmount)}</span></p>
+            <p className="flex justify-between"><span className="text-ink-soft">Esperado</span> <span className="text-ink">{money(closeResult.expectedAmount)}</span></p>
+            <p className="flex justify-between"><span className="text-ink-soft">Contado</span> <span className="text-ink">{money(closeResult.closingAmount)}</span></p>
             <p className="flex justify-between font-medium">
-              <span>Diferencia</span>
-              <span className={closeResult.difference === 0 ? 'text-emerald-600' : 'text-amber-600'}>
+              <span className="text-ink">Diferencia</span>
+              <span className={closeResult.difference === 0 ? 'text-sage-dark' : 'text-clay-dark'}>
                 {closeResult.difference > 0 ? '+' : ''}{money(closeResult.difference)}
               </span>
             </p>
@@ -245,12 +233,9 @@ export function CashRegisterPage() {
 
 function StatCard({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-      <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
-      <p className={`mt-1 text-lg text-slate-900 dark:text-slate-50 ${tone ?? ''}`}>{value}</p>
+    <div className={`p-4 ${cardClass}`}>
+      <p className="text-xs text-ink-soft">{label}</p>
+      <p className={`mt-1 text-lg text-ink ${tone ?? ''}`}>{value}</p>
     </div>
   )
 }
-
-const inputClass =
-  'w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-600 dark:text-slate-100 dark:placeholder:text-slate-500'

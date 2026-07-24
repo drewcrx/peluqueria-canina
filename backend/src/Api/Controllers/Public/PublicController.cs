@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using PeluqueriaSaas.Api;
 using PeluqueriaSaas.Application.Common.Interfaces;
+using PeluqueriaSaas.Application.Features.Public.GetPetCard;
 using PeluqueriaSaas.Application.Features.Public.GetPublicTenantInfo;
 using PeluqueriaSaas.Application.Features.Public.SubmitIntake;
 
@@ -29,6 +30,7 @@ public class PublicController(ISender mediator) : ControllerBase
     {
         var photos = request.Photos.Select(ToStoredFile).ToList();
         var signature = request.Signature is null ? null : ToStoredFile(request.Signature);
+        var petPhoto = request.PetPhoto is null ? null : ToStoredFile(request.PetPhoto);
 
         var command = new SubmitIntakeCommand(
             slug,
@@ -41,6 +43,8 @@ public class PublicController(ISender mediator) : ControllerBase
             request.PetSex,
             request.PetAgeYears,
             request.PetWeightKg,
+            request.PetColor,
+            petPhoto,
             request.Vaccines,
             request.Diseases,
             request.Medications,
@@ -52,6 +56,12 @@ public class PublicController(ISender mediator) : ControllerBase
 
         var result = await mediator.Send(command, cancellationToken);
         return Ok(result);
+    }
+
+    [HttpGet("/api/public/pets/{petId:guid}")]
+    public async Task<ActionResult<PetCardDto>> GetPetCard(Guid petId, CancellationToken cancellationToken)
+    {
+        return Ok(await mediator.Send(new GetPetCardQuery(petId), cancellationToken));
     }
 
     private static StoredFile ToStoredFile(IFormFile file) =>

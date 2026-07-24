@@ -47,6 +47,8 @@ public class GetMyTenantQueryHandler(IApplicationDbContext db, IIdentityService 
             subscription.CurrentPeriodEnd,
             features,
             tenant.WhatsAppNumber,
-            tenant.CustomDomainRequested);
+            tenant.CustomDomainRequested,
+            tenant.LogoUrl,
+            tenant.BrandColor);
     }
 }

@@ -7,6 +7,10 @@ import { useForm } from 'react-hook-form'
 import { useParams } from 'react-router-dom'
 import SignatureCanvas from 'react-signature-canvas'
 import { z } from 'zod'
+import { BackgroundBlobs } from '../../components/BackgroundBlobs'
+import { Button } from '../../components/ui/Button'
+import { cardClass, inputClass, labelClass } from '../../components/ui/styles'
+import { resolveUploadUrl } from '../../lib/apiBaseUrl'
 import { dataUrlToFile } from '../../lib/dataUrlToFile'
 import { getPublicTenantInfo, submitIntake } from './api'
 
@@ -22,6 +26,7 @@ const formSchema = z.object({
   petSex: z.enum(['Male', 'Female']),
   petAgeYears: z.string().optional().transform((v) => (v ? Number(v) : undefined)),
   petWeightKg: z.string().optional().transform((v) => (v ? Number(v) : undefined)),
+  petColor: z.string().optional(),
   vaccines: z.string().optional(),
   diseases: z.string().optional(),
   medications: z.string().optional(),
@@ -47,6 +52,7 @@ export function PublicFormPage() {
 
   const [selectedServices, setSelectedServices] = useState<string[]>([])
   const [photos, setPhotos] = useState<File[]>([])
+  const [petPhoto, setPetPhoto] = useState<File | null>(null)
   const [signatureError, setSignatureError] = useState(false)
   const [submitted, setSubmitted] = useState<{ petName: string; clientFullName: string } | null>(null)
   const signatureRef = useRef<SignatureCanvas>(null)
@@ -66,6 +72,7 @@ export function PublicFormPage() {
 
       return submitIntake(slug!, {
         ...values,
+        petPhoto,
         requestedServiceIds: selectedServices,
         photos,
         signature: signatureFile,
@@ -108,13 +115,13 @@ export function PublicFormPage() {
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-500 dark:bg-emerald-950"
+          className="flex h-16 w-16 items-center justify-center rounded-full bg-sage-light text-sage-dark"
         >
           <CheckCircle2 className="h-8 w-8" strokeWidth={2} />
         </motion.div>
-        <h1 className="mt-4 text-xl font-semibold text-slate-900 dark:text-slate-50">¡Listo, {submitted.clientFullName}!</h1>
-        <p className="mt-2 max-w-sm text-slate-500 dark:text-slate-400">
-          Registramos a <span className="font-medium">{submitted.petName}</span> en {info.tenantName}. Nos pondremos en
+        <h1 className="mt-4 font-display text-xl font-semibold text-ink">¡Listo, {submitted.clientFullName}!</h1>
+        <p className="mt-2 max-w-sm text-ink-soft">
+          Registramos a <span className="font-medium text-ink">{submitted.petName}</span> en {info.tenantName}. Nos pondremos en
           contacto contigo pronto.
         </p>
       </CenteredMessage>
@@ -122,14 +129,24 @@ export function PublicFormPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-8 dark:bg-slate-950 sm:py-12">
-      <div className="mx-auto max-w-lg">
+    <div className="relative min-h-screen overflow-hidden bg-cream px-4 py-8 sm:py-12">
+      <BackgroundBlobs />
+      <div className="relative mx-auto max-w-lg">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white">
-            <Sparkles className="h-5 w-5" strokeWidth={2.5} />
+          <div
+            className="mx-auto mb-3 flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl text-cream shadow-soft"
+            style={{ backgroundColor: info.brandColor ?? undefined }}
+          >
+            {info.logoUrl ? (
+              <img src={resolveUploadUrl(info.logoUrl)} alt={info.tenantName} className="h-full w-full object-cover" />
+            ) : (
+              <span className="flex h-full w-full items-center justify-center bg-clay-dark">
+                <Sparkles className="h-5 w-5" strokeWidth={2.5} />
+              </span>
+            )}
           </div>
-          <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-50">{info.tenantName}</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Registra a tu mascota para su próxima visita</p>
+          <h1 className="font-display text-xl font-semibold text-ink">{info.tenantName}</h1>
+          <p className="text-sm text-ink-soft">Registra a tu mascota para su próxima visita</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -178,6 +195,30 @@ export function PublicFormPage() {
                 <input type="number" step="0.1" {...register('petWeightKg')} className={inputClass} />
               </Field>
             </div>
+            <Field label="Color">
+              <input {...register('petColor')} className={inputClass} />
+            </Field>
+            <Field label="Foto de tu mascota (opcional)">
+              <div className="flex items-center gap-3">
+                {petPhoto && (
+                  <img
+                    src={URL.createObjectURL(petPhoto)}
+                    alt=""
+                    className="h-14 w-14 rounded-xl object-cover ring-1 ring-sand-dark"
+                  />
+                )}
+                <label className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-dashed border-sand-dark px-3 py-2 text-sm text-ink-soft hover:border-clay/50 hover:text-clay-dark">
+                  <Camera className="h-4 w-4" strokeWidth={1.5} />
+                  {petPhoto ? 'Cambiar foto' : 'Subir foto'}
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    hidden
+                    onChange={(e) => setPetPhoto(e.target.files?.[0] ?? null)}
+                  />
+                </label>
+              </div>
+            </Field>
             <Field label="Vacunas (opcional)">
               <input {...register('vaccines')} className={inputClass} placeholder="Al día, pendiente rabia..." />
             </Field>
@@ -194,7 +235,7 @@ export function PublicFormPage() {
 
           <Section icon={Sparkles} title="Servicios solicitados">
             {info.services.length === 0 ? (
-              <p className="text-sm text-slate-400">Esta peluquería no tiene servicios configurados todavía.</p>
+              <p className="text-sm text-ink-soft">Esta peluquería no tiene servicios configurados todavía.</p>
             ) : (
               <div className="grid grid-cols-2 gap-2">
                 {info.services.map((service) => {
@@ -204,11 +245,12 @@ export function PublicFormPage() {
                       type="button"
                       key={service.id}
                       onClick={() => toggleService(service.id)}
-                      className={`rounded-lg border px-3 py-2 text-left text-sm transition-colors ${
+                      className={`rounded-xl border px-3 py-2 text-left text-sm transition-colors ${
                         checked
-                          ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
-                          : 'border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300'
+                          ? 'border-clay bg-clay/10 text-clay-dark'
+                          : 'border-sand-dark text-ink-soft hover:border-clay/40'
                       }`}
+                      style={checked && info.brandColor ? { borderColor: info.brandColor, color: info.brandColor } : undefined}
                     >
                       {service.name}
                     </button>
@@ -225,19 +267,19 @@ export function PublicFormPage() {
           <Section icon={Camera} title="Fotos (opcional)">
             <div className="flex flex-wrap gap-2">
               {photos.map((photo, i) => (
-                <div key={i} className="relative h-16 w-16 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
+                <div key={i} className="relative h-16 w-16 overflow-hidden rounded-xl border border-sand-dark">
                   <img src={URL.createObjectURL(photo)} alt="" className="h-full w-full object-cover" />
                   <button
                     type="button"
                     onClick={() => setPhotos((prev) => prev.filter((_, idx) => idx !== i))}
-                    className="absolute right-0.5 top-0.5 rounded-full bg-slate-900/60 p-0.5 text-white"
+                    className="absolute right-0.5 top-0.5 rounded-full bg-ink/60 p-0.5 text-cream"
                   >
                     <X className="h-3 w-3" />
                   </button>
                 </div>
               ))}
               {photos.length < MAX_PHOTOS && (
-                <label className="flex h-16 w-16 cursor-pointer items-center justify-center rounded-lg border border-dashed border-slate-300 text-slate-400 hover:border-indigo-400 hover:text-indigo-500 dark:border-slate-700">
+                <label className="flex h-16 w-16 cursor-pointer items-center justify-center rounded-xl border border-dashed border-sand-dark text-ink-soft/50 hover:border-clay/50 hover:text-clay-dark">
                   <Camera className="h-5 w-5" strokeWidth={1.5} />
                   <input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onChange={handlePhotosChange} />
                 </label>
@@ -247,11 +289,11 @@ export function PublicFormPage() {
 
           <div id="signature-section">
             <Section icon={PawPrint} title="Firma">
-              <p className="mb-2 text-xs text-slate-400 dark:text-slate-600">
+              <p className="mb-2 text-xs text-ink-soft">
                 Al firmar confirmas los datos ingresados y autorizas el servicio.
               </p>
               <div
-                className={`overflow-hidden rounded-lg border bg-white ${signatureError ? 'border-red-400' : 'border-slate-200 dark:border-slate-700'}`}
+                className={`overflow-hidden rounded-xl border bg-white ${signatureError ? 'border-red-400' : 'border-sand-dark'}`}
               >
                 <SignatureCanvas
                   ref={signatureRef}
@@ -261,11 +303,11 @@ export function PublicFormPage() {
                   onEnd={() => setSignatureError(false)}
                 />
               </div>
-              {signatureError && <p className="mt-1 text-xs text-red-500">Por favor firma antes de enviar.</p>}
+              {signatureError && <p className="mt-1 text-xs text-red-600">Por favor firma antes de enviar.</p>}
               <button
                 type="button"
                 onClick={() => signatureRef.current?.clear()}
-                className="mt-2 flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400"
+                className="mt-2 flex items-center gap-1 text-xs text-ink-soft hover:text-ink"
               >
                 <Eraser className="h-3 w-3" /> Limpiar firma
               </button>
@@ -273,16 +315,18 @@ export function PublicFormPage() {
           </div>
 
           {mutation.isError && (
-            <p className="text-center text-sm text-red-500">No se pudo enviar el formulario. Intenta de nuevo.</p>
+            <p className="text-center text-sm text-red-600">No se pudo enviar el formulario. Intenta de nuevo.</p>
           )}
 
-          <button
+          <Button
             type="submit"
+            variant="accent"
             disabled={mutation.isPending}
-            className="w-full rounded-lg bg-indigo-600 py-3 text-sm font-medium text-white shadow-sm shadow-indigo-600/20 hover:bg-indigo-700 disabled:opacity-50"
+            className="w-full"
+            style={info.brandColor ? { backgroundColor: info.brandColor } : undefined}
           >
             {mutation.isPending ? 'Enviando…' : 'Enviar formulario'}
-          </button>
+          </Button>
         </form>
       </div>
     </div>
@@ -291,7 +335,7 @@ export function PublicFormPage() {
 
 function CenteredMessage({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 text-center dark:bg-slate-950">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-cream px-4 text-center">
       {children}
     </div>
   )
@@ -299,10 +343,10 @@ function CenteredMessage({ children }: { children: React.ReactNode }) {
 
 function Section({ icon: Icon, title, children }: { icon: typeof User; title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+    <div className={`p-5 ${cardClass}`}>
       <div className="mb-4 flex items-center gap-2">
-        <Icon className="h-4.5 w-4.5 text-indigo-500" strokeWidth={2} />
-        <h2 className="font-medium text-slate-900 dark:text-slate-50">{title}</h2>
+        <Icon className="h-4.5 w-4.5 text-clay-dark" strokeWidth={2} />
+        <h2 className="font-display font-medium text-ink">{title}</h2>
       </div>
       <div className="space-y-3">{children}</div>
     </div>
@@ -312,12 +356,9 @@ function Section({ icon: Icon, title, children }: { icon: typeof User; title: st
 function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">{label}</label>
+      <label className={labelClass}>{label}</label>
       {children}
-      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
   )
 }
-
-const inputClass =
-  'w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-600 dark:text-slate-100 dark:placeholder:text-slate-500'

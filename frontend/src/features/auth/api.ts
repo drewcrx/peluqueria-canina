@@ -16,3 +16,22 @@ export async function registerTenant(values: RegisterFormValues): Promise<AuthUs
   })
   return data
 }
+
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  await api.put('/auth/change-password', { currentPassword, newPassword })
+}
+
+export interface ForgotPasswordResult {
+  sent: boolean
+  resetToken: string | null
+  resetUrl: string | null
+}
+
+export async function forgotPassword(email: string): Promise<ForgotPasswordResult> {
+  const { data } = await api.post<ForgotPasswordResult>('/auth/forgot-password', { email })
+  return data
+}
+
+export async function resetPassword(email: string, token: string, newPassword: string): Promise<void> {
+  await api.post('/auth/reset-password', { email, token, newPassword })
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">AUREA Pet Spa</string>
+    <string name="title_activity_main">AUREA Pet Spa</string>
+    <string name="package_name">com.aurea.petspa</string>
+    <string name="custom_url_scheme">com.aurea.petspa</string>
+</resources>

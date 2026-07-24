@@ -40,6 +40,8 @@ export interface CreatePetInput {
   sex: 'Male' | 'Female'
   ageYears?: number
   weightKg?: number
+  color?: string
+  photo?: File | null
   vaccines?: string
   diseases?: string
   medications?: string
@@ -62,6 +64,19 @@ export async function createClient(input: CreateClientInput): Promise<string> {
 }
 
 export async function createPet(clientId: string, input: CreatePetInput): Promise<string> {
-  const { data } = await api.post<string>(`/clients/${clientId}/pets`, input)
+  const form = new FormData()
+  form.append('Name', input.name)
+  form.append('BreedId', input.breedId)
+  form.append('Sex', input.sex)
+  if (input.ageYears != null) form.append('AgeYears', String(input.ageYears))
+  if (input.weightKg != null) form.append('WeightKg', String(input.weightKg))
+  if (input.color) form.append('Color', input.color)
+  if (input.photo) form.append('Photo', input.photo)
+  if (input.vaccines) form.append('Vaccines', input.vaccines)
+  if (input.diseases) form.append('Diseases', input.diseases)
+  if (input.medications) form.append('Medications', input.medications)
+  if (input.allergies) form.append('Allergies', input.allergies)
+
+  const { data } = await api.post<string>(`/clients/${clientId}/pets`, form)
   return data
 }

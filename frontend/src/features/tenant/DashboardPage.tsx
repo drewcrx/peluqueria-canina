@@ -2,17 +2,21 @@ import { useQuery } from '@tanstack/react-query'
 import { AnimatePresence, motion, type Variants } from 'framer-motion'
 import { Calendar, Check, Copy, ExternalLink, Sparkles, Users } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
+import { BackgroundBlobs } from '../../components/BackgroundBlobs'
 import { DashboardSkeleton } from '../../components/layout/DashboardSkeleton'
 import { TenantShell } from '../../components/layout/TenantShell'
+import { cardClass } from '../../components/ui/styles'
 import { useCountUp } from '../../lib/useCountUp'
 import { useAuth } from '../auth/AuthContext'
 import { getMyTenant, type MyTenant } from './api'
+import { OnboardingChecklist } from './OnboardingChecklist'
+import { PlansModal } from './PlansModal'
 
 const STATUS_STYLES: Record<MyTenant['subscriptionStatus'], { label: string; className: string }> = {
-  Trialing: { label: 'En prueba', className: 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300' },
-  Active: { label: 'Activa', className: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' },
-  PastDue: { label: 'Pago pendiente', className: 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300' },
-  Cancelled: { label: 'Cancelada', className: 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300' },
+  Trialing: { label: 'En prueba', className: 'bg-clay/15 text-clay-dark' },
+  Active: { label: 'Activa', className: 'bg-sage-light text-sage-dark' },
+  PastDue: { label: 'Pago pendiente', className: 'bg-gold/25 text-ink-soft' },
+  Cancelled: { label: 'Cancelada', className: 'bg-red-50 text-red-700' },
 }
 
 const PREMIUM_TEASER: Record<string, string> = {
@@ -43,6 +47,7 @@ export function DashboardPage() {
   const { user } = useAuth()
   const { data: tenant, isLoading, isError } = useQuery({ queryKey: ['my-tenant'], queryFn: getMyTenant })
   const [copied, setCopied] = useState(false)
+  const [plansOpen, setPlansOpen] = useState(false)
 
   const firstName = user?.fullName.split(' ')[0]
   const publicFormUrl = tenant ? `${window.location.origin}/f/${tenant.publicFormSlug}` : ''
@@ -56,36 +61,26 @@ export function DashboardPage() {
 
   return (
     <TenantShell>
-      {/* Decorative background glow — subtle, purely visual */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <motion.div
-          className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-indigo-400/20 blur-3xl dark:bg-indigo-500/10"
-          animate={{ y: [0, 20, 0], x: [0, -10, 0] }}
-          transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <motion.div
-          className="absolute top-40 -left-32 h-80 w-80 rounded-full bg-violet-400/10 blur-3xl dark:bg-violet-500/10"
-          animate={{ y: [0, -16, 0], x: [0, 12, 0] }}
-          transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
-        />
-      </div>
+      <BackgroundBlobs />
 
       {isLoading && <DashboardSkeleton />}
-      {isError && <p className="text-red-500">No se pudo cargar la información de tu peluquería.</p>}
+      {isError && <p className="text-red-600">No se pudo cargar la información de tu peluquería.</p>}
 
       {tenant && (
             <motion.div variants={containerVariants} initial="hidden" animate="show">
               <motion.div variants={itemVariants} className="mb-8">
-                <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">Hola, {firstName}</h1>
-                <p className="mt-1 text-slate-500 dark:text-slate-400">
-                  Esto es lo que está pasando hoy en <span className="font-medium">{tenant.name}</span>.
+                <h1 className="font-display text-2xl font-medium tracking-tight text-ink">Hola, {firstName}</h1>
+                <p className="mt-1 text-ink-soft">
+                  Esto es lo que está pasando hoy en <span className="font-medium text-ink">{tenant.name}</span>.
                 </p>
               </motion.div>
+
+              <OnboardingChecklist publicFormUrl={publicFormUrl} />
 
               {tenant.subscriptionStatus === 'Trialing' && (
                 <motion.div
                   variants={itemVariants}
-                  className="relative mb-8 overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-5 text-white shadow-lg shadow-indigo-600/20"
+                  className="relative mb-8 overflow-hidden rounded-2xl bg-ink px-6 py-5 text-cream shadow-premium"
                 >
                   {/* Shine sweep */}
                   <motion.div
@@ -97,7 +92,7 @@ export function DashboardPage() {
                   <div className="relative flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                       <motion.div
-                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15"
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-clay/25"
                         animate={{ rotate: [0, 12, -12, 0] }}
                         transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
                       >
@@ -108,25 +103,39 @@ export function DashboardPage() {
                           Te quedan <span className="tabular-nums">{daysLeft}</span> días de prueba en el Plan{' '}
                           {tenant.planName}
                         </p>
-                        <p className="text-sm text-indigo-100">
+                        <p className="text-sm text-cream/70">
                           Tu prueba termina el {formatDate(tenant.currentPeriodEnd)}. Actualiza cuando quieras — sin
                           perder tus datos.
                         </p>
                       </div>
                     </div>
-                    <motion.span
+                    <motion.button
+                      onClick={() => setPlansOpen(true)}
                       whileHover={{ scale: 1.04 }}
                       whileTap={{ scale: 0.97 }}
-                      className="shrink-0 cursor-default rounded-lg bg-white/15 px-3 py-1.5 text-sm font-medium backdrop-blur-sm"
+                      className="shrink-0 rounded-full bg-clay-dark px-3 py-1.5 text-sm font-medium"
                     >
-                      Actualizar plan · Próximamente
-                    </motion.span>
+                      Ver planes
+                    </motion.button>
                   </div>
                 </motion.div>
               )}
 
               <motion.div variants={itemVariants} className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <StatCard label="Plan actual" value={`${tenant.planName} · $${tenant.planPriceUsd}/mes`} />
+                <StatCard
+                  label="Plan actual"
+                  value={
+                    <span className="flex items-center gap-2">
+                      {tenant.planName} · ${tenant.planPriceUsd}/mes
+                      <button
+                        onClick={() => setPlansOpen(true)}
+                        className="text-xs font-medium text-clay-dark hover:underline"
+                      >
+                        Ver planes
+                      </button>
+                    </span>
+                  }
+                />
                 <StatCard
                   label="Estado de suscripción"
                   value={
@@ -149,26 +158,26 @@ export function DashboardPage() {
                   variants={itemVariants}
                   whileHover={{ y: -3 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-                  className="lg:col-span-3 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+                  className={`lg:col-span-3 p-6 ${cardClass}`}
                 >
                   <div className="mb-4 flex items-center gap-2">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-clay/15 text-clay-dark">
                       <ExternalLink className="h-4.5 w-4.5" strokeWidth={2} />
                     </div>
                     <div>
-                      <h2 className="font-medium text-slate-900 dark:text-slate-50">Formulario público</h2>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                      <h2 className="font-display font-medium text-ink">Formulario público</h2>
+                      <p className="text-sm text-ink-soft">
                         Compártelo con tus clientes para que registren a su mascota
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-slate-800 dark:bg-slate-950">
-                    <code className="flex-1 truncate text-sm text-slate-600 dark:text-slate-300">{publicFormUrl}</code>
+                  <div className="flex items-center gap-2 rounded-xl border border-sand-dark/60 bg-cream-dark/50 px-3 py-2.5">
+                    <code className="flex-1 truncate text-sm text-ink-soft">{publicFormUrl}</code>
                     <motion.button
                       onClick={copyFormUrl}
                       whileTap={{ scale: 0.94 }}
-                      className="flex shrink-0 items-center gap-1.5 rounded-md bg-white px-2.5 py-1.5 text-xs font-medium text-slate-600 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700"
+                      className="flex shrink-0 items-center gap-1.5 rounded-full bg-white px-2.5 py-1.5 text-xs font-medium text-ink-soft shadow-soft ring-1 ring-sand-dark hover:bg-sand/40"
                     >
                       <AnimatePresence mode="wait" initial={false}>
                         {copied ? (
@@ -180,7 +189,7 @@ export function DashboardPage() {
                             transition={{ duration: 0.2 }}
                             className="flex items-center gap-1.5"
                           >
-                            <Check className="h-3.5 w-3.5 text-emerald-500" />
+                            <Check className="h-3.5 w-3.5 text-sage-dark" />
                             Copiado
                           </motion.span>
                         ) : (
@@ -199,7 +208,7 @@ export function DashboardPage() {
                       </AnimatePresence>
                     </motion.button>
                   </div>
-                  <p className="mt-3 text-xs text-slate-400 dark:text-slate-600">
+                  <p className="mt-3 text-xs text-ink-soft">
                     Compártelo por WhatsApp o donde prefieras — cada envío crea el cliente y la mascota automáticamente.
                   </p>
                 </motion.div>
@@ -208,13 +217,13 @@ export function DashboardPage() {
                   variants={itemVariants}
                   whileHover={{ y: -3 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-                  className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+                  className={`lg:col-span-2 p-6 ${cardClass}`}
                 >
                   <div className="mb-4 flex items-center gap-2">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-50 text-violet-600 dark:bg-violet-950 dark:text-violet-300">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sage-light text-sage-dark">
                       <Calendar className="h-4.5 w-4.5" strokeWidth={2} />
                     </div>
-                    <h2 className="font-medium text-slate-900 dark:text-slate-50">Tu plan</h2>
+                    <h2 className="font-display font-medium text-ink">Tu plan</h2>
                   </div>
 
                   {tenant.features.length > 0 ? (
@@ -225,7 +234,7 @@ export function DashboardPage() {
                           initial={{ opacity: 0, scale: 0.8 }}
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ delay: 0.4 + i * 0.05 }}
-                          className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300"
+                          className="rounded-full bg-clay/15 px-2.5 py-1 text-xs font-medium text-clay-dark"
                         >
                           {feature}
                         </motion.span>
@@ -233,12 +242,12 @@ export function DashboardPage() {
                     </div>
                   ) : (
                     <div>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                      <p className="text-sm text-ink-soft">
                         El Plan {tenant.planName} cubre lo esencial: clientes, mascotas, agenda, historial y formulario
                         público.
                       </p>
-                      <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                        Con <span className="font-medium text-slate-700 dark:text-slate-300">Intermedio</span>{' '}
+                      <p className="mt-2 text-sm text-ink-soft">
+                        Con <span className="font-medium text-ink">Intermedio</span>{' '}
                         desbloqueas {PREMIUM_TEASER.intermedio}.
                       </p>
                     </div>
@@ -247,6 +256,8 @@ export function DashboardPage() {
               </div>
             </motion.div>
           )}
+
+      {tenant && <PlansModal open={plansOpen} onClose={() => setPlansOpen(false)} currentPlanCode={tenant.planCode} />}
     </TenantShell>
   )
 }
@@ -256,13 +267,13 @@ function StatCard({ label, value, icon: Icon }: { label: string; value: ReactNod
     <motion.div
       whileHover={{ y: -3 }}
       transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-      className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+      className={`p-5 ${cardClass}`}
     >
-      <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+      <div className="flex items-center gap-2 text-sm text-ink-soft">
         {Icon && <Icon className="h-4 w-4" strokeWidth={2} />}
         {label}
       </div>
-      <div className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-50">{value}</div>
+      <div className="mt-2 text-lg font-semibold text-ink">{value}</div>
     </motion.div>
   )
 }

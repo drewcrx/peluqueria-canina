@@ -2,18 +2,26 @@ using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using PeluqueriaSaas.Api.Auth;
+using PeluqueriaSaas.Application.Features.Auth.ChangePassword;
 using PeluqueriaSaas.Application.Features.Auth.Common;
+using PeluqueriaSaas.Application.Features.Auth.ForgotPassword;
 using PeluqueriaSaas.Application.Features.Auth.Login;
 using PeluqueriaSaas.Application.Features.Auth.Logout;
 using PeluqueriaSaas.Application.Features.Auth.Refresh;
 using PeluqueriaSaas.Application.Features.Auth.RegisterTenant;
+using PeluqueriaSaas.Application.Features.Auth.ResetPassword;
 
 namespace PeluqueriaSaas.Api.Controllers;
 
 public record RegisterTenantRequest(string CompanyName, string OwnerFullName, string OwnerEmail, string OwnerPassword);
 public record LoginRequest(string Email, string Password);
 public record AuthUserResponse(Guid UserId, string Email, string FullName, Guid? TenantId, string[] Roles);
+public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
+public record ForgotPasswordRequest(string Email);
+public record ForgotPasswordResponse(bool Sent, string? ResetToken, string? ResetUrl);
+public record ResetPasswordRequest(string Email, string Token, string NewPassword);
 
 [ApiController]
 [Route("api/auth")]
@@ -82,6 +90,38 @@ public class AuthController(ISender mediator, IWebHostEnvironment environment) :
         }
 
         AuthCookies.Clear(Response);
+        return NoContent();
+    }
+
+    [Authorize]
+    [HttpPut("change-password")]
+    public async Task<IActionResult> ChangePassword(ChangePasswordRequest request, CancellationToken cancellationToken)
+    {
+        await mediator.Send(new ChangePasswordCommand(request.CurrentPassword, request.NewPassword), cancellationToken);
+        return NoContent();
+    }
+
+    [AllowAnonymous]
+    [EnableRateLimiting(RateLimiterPolicies.PasswordReset)]
+    [HttpPost("forgot-password")]
+    public async Task<ActionResult<ForgotPasswordResponse>> ForgotPassword(ForgotPasswordRequest request, CancellationToken cancellationToken)
+    {
+        var result = await mediator.Send(new ForgotPasswordCommand(request.Email), cancellationToken);
+
+        // El token/enlace solo viaja al cliente fuera de Producción — no hay envío de correo real
+        // todavía (ver IEmailSender), así que esto reemplaza a "revisa tu bandeja de entrada" en dev,
+        // igual que la contraseña temporal de un empleado se muestra una vez en un modal.
+        return Ok(environment.IsDevelopment()
+            ? new ForgotPasswordResponse(result.Sent, result.ResetToken, result.ResetUrl)
+            : new ForgotPasswordResponse(result.Sent, null, null));
+    }
+
+    [AllowAnonymous]
+    [EnableRateLimiting(RateLimiterPolicies.PasswordReset)]
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword(ResetPasswordRequest request, CancellationToken cancellationToken)
+    {
+        await mediator.Send(new ResetPasswordCommand(request.Email, request.Token, request.NewPassword), cancellationToken);
         return NoContent();
     }
 

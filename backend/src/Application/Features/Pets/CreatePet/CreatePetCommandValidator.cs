@@ -1,4 +1,5 @@
 using FluentValidation;
+using PeluqueriaSaas.Application.Common;
 
 namespace PeluqueriaSaas.Application.Features.Pets.CreatePet;
 
@@ -11,5 +12,9 @@ public class CreatePetCommandValidator : AbstractValidator<CreatePetCommand>
         RuleFor(x => x.BreedId).NotEmpty();
         RuleFor(x => x.AgeYears).InclusiveBetween(0, 40).When(x => x.AgeYears.HasValue);
         RuleFor(x => x.WeightKg).InclusiveBetween(0.1m, 150m).When(x => x.WeightKg.HasValue);
+        RuleFor(x => x.Color).MaximumLength(60);
+        RuleFor(x => x.Photo)
+            .Must(p => p is null || AllowedImageTypes.IsAllowed(p.ContentType, p.FileName))
+            .WithMessage("Solo se permiten imágenes JPG, PNG, WEBP o GIF.");
     }
 }

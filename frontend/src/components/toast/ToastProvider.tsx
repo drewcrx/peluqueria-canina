@@ -52,10 +52,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, x: 40, transition: { duration: 0.15 } }}
               transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-              className={`pointer-events-auto flex items-start gap-2.5 rounded-xl border px-4 py-3 shadow-lg backdrop-blur-sm ${
+              className={`pointer-events-auto flex items-start gap-2.5 rounded-2xl border px-4 py-3 shadow-premium backdrop-blur-sm ${
                 toast.type === 'success'
-                  ? 'border-emerald-200 bg-emerald-50/95 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/95 dark:text-emerald-200'
-                  : 'border-red-200 bg-red-50/95 text-red-800 dark:border-red-900 dark:bg-red-950/95 dark:text-red-200'
+                  ? 'border-sage-light bg-white/95 text-sage-dark'
+                  : 'border-red-200 bg-red-50/95 text-red-800'
               }`}
             >
               {toast.type === 'success' ? (

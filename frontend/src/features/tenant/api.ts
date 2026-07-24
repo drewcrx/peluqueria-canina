@@ -15,6 +15,8 @@ export interface MyTenant {
   features: string[]
   whatsAppNumber: string | null
   customDomainRequested: string | null
+  logoUrl: string | null
+  brandColor: string | null
 }
 
 export async function getMyTenant(): Promise<MyTenant> {
@@ -28,4 +30,17 @@ export async function updateWhatsAppSettings(whatsAppNumber: string | null): Pro
 
 export async function updateCustomDomain(customDomainRequested: string | null): Promise<void> {
   await api.put('/tenant/custom-domain', { customDomainRequested })
+}
+
+export async function updateBranding(name: string, brandColor: string | null): Promise<void> {
+  await api.put('/tenant/branding', { name, brandColor })
+}
+
+export async function uploadLogo(file: File): Promise<string> {
+  const formData = new FormData()
+  formData.append('logo', file)
+  const { data } = await api.post<string>('/tenant/logo', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return data
 }

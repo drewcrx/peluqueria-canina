@@ -12,6 +12,8 @@ public class Pet : BaseEntity, ITenantScoped
     public PetSex Sex { get; private set; }
     public int? AgeYears { get; private set; }
     public decimal? WeightKg { get; private set; }
+    public string? Color { get; private set; }
+    public string? PhotoUrl { get; private set; }
     public string? Vaccines { get; private set; }
     public string? Diseases { get; private set; }
     public string? Medications { get; private set; }
@@ -27,6 +29,8 @@ public class Pet : BaseEntity, ITenantScoped
         PetSex sex,
         int? ageYears,
         decimal? weightKg,
+        string? color,
+        string? photoUrl,
         string? vaccines,
         string? diseases,
         string? medications,
@@ -39,9 +43,13 @@ public class Pet : BaseEntity, ITenantScoped
         Sex = sex,
         AgeYears = ageYears,
         WeightKg = weightKg,
+        Color = color,
+        PhotoUrl = photoUrl,
         Vaccines = vaccines,
         Diseases = diseases,
         Medications = medications,
         Allergies = allergies
     };
+
+    public void SetPhotoUrl(string? photoUrl) => PhotoUrl = photoUrl;
 }

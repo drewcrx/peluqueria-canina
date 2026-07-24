@@ -4,6 +4,7 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
@@ -36,8 +37,12 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddCors(options =>
 {
+    // https://localhost y capacitor://localhost: orígenes por defecto del WebView de la app
+    // empaquetada con Capacitor (Android/iOS) — necesarios para que pueda llamar a este backend
+    // aunque no se sirva desde el mismo origen que la app.
     options.AddPolicy(frontendCorsPolicy, policy => policy
-        .WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? ["http://localhost:5173"])
+        .WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+            ?? ["http://localhost:5173", "https://localhost", "capacitor://localhost"])
         .AllowAnyHeader()
         .AllowAnyMethod()
         .AllowCredentials());
@@ -116,6 +121,16 @@ builder.Services.AddRateLimiter(options =>
         opt.QueueLimit = 0;
         opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
     });
+    // Sin esto, olvidé-mi-contraseña se puede usar para enumerar correos registrados a fuerza
+    // bruta (aunque la respuesta no distinga "existe"/"no existe", el tiempo/volumen sí delata) o
+    // para spamear el "envío" de correo.
+    options.AddFixedWindowLimiter(RateLimiterPolicies.PasswordReset, opt =>
+    {
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.PermitLimit = 5;
+        opt.QueueLimit = 0;
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+    });
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
 
@@ -142,14 +157,29 @@ else
 
 app.UseCors(frontendCorsPolicy);
 
-// Sirve fotos/firmas guardadas por LocalFileStorage. Carpeta fuera de wwwroot, expuesta solo
-// bajo el prefijo /uploads.
+// Sirve fotos/firmas/logos guardados por LocalFileStorage. Carpeta fuera de wwwroot, expuesta
+// solo bajo el prefijo /uploads.
+//
+// El allowlist de tipos de contenido es defensa en profundidad, no el único control: si algún
+// día se cuela un archivo con una extensión fuera de esta lista (p. ej. .html) por un descuido en
+// la validación de un handler de subida, ASP.NET no lo sirve igual (ServeUnknownFileTypes queda
+// en su default `false`) en vez de devolverlo con un Content-Type que el navegador ejecute.
 var uploadsPath = Path.Combine(app.Environment.ContentRootPath, "App_Data", "uploads");
 Directory.CreateDirectory(uploadsPath);
+var uploadsContentTypeProvider = new FileExtensionContentTypeProvider(new Dictionary<string, string>
+{
+    [".jpg"] = "image/jpeg",
+    [".jpeg"] = "image/jpeg",
+    [".png"] = "image/png",
+    [".webp"] = "image/webp",
+    [".gif"] = "image/gif",
+});
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(uploadsPath),
-    RequestPath = "/uploads"
+    RequestPath = "/uploads",
+    ContentTypeProvider = uploadsContentTypeProvider,
+    OnPrepareResponse = ctx => ctx.Context.Response.Headers.Append("X-Content-Type-Options", "nosniff"),
 });
 
 app.UseRateLimiter();

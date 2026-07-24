@@ -20,6 +20,8 @@ public record PetHistoryDto(
     string Sex,
     int? AgeYears,
     decimal? WeightKg,
+    string? Color,
+    string? PhotoUrl,
     string? Vaccines,
     string? Diseases,
     string? Medications,

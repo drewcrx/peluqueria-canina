@@ -34,10 +34,11 @@ public static class DependencyInjection
                 options.User.RequireUniqueEmail = true;
             })
             .AddRoles<IdentityRole<Guid>>()
-            .AddEntityFrameworkStores<ApplicationDbContext>();
-            // AddDefaultTokenProviders() vive en el framework compartido de ASP.NET Core (no
-            // disponible en una librería de clases) y no hace falta todavía: no hay flujo de
-            // "olvidé mi contraseña" ni confirmación de email en esta fase. Se añade cuando exista.
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            // AddDefaultTokenProviders() no está disponible aquí (requiere el paquete completo
+            // Microsoft.AspNetCore.Identity, no solo Identity.Core) — se registra a mano el único
+            // provider que sí necesitamos: el de reset de contraseña.
+            .AddTokenProvider<DataProtectorTokenProvider<ApplicationUser>>(TokenOptions.DefaultProvider);
 
         services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
 
@@ -49,6 +50,7 @@ public static class DependencyInjection
         services.AddScoped<IEntitlementService, EntitlementService>();
         services.AddScoped<IFileStorage, LocalFileStorage>();
         services.AddScoped<INotificationSender, LogNotificationSender>();
+        services.AddScoped<IEmailSender, LogEmailSender>();
 
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
