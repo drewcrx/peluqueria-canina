@@ -20,6 +20,7 @@ public class SubmitIntakeRequest
     public string? Medications { get; set; }
     public string? Allergies { get; set; }
     public string? Observations { get; set; }
+    public DateTime? RequestedAt { get; set; }
     public List<Guid> RequestedServiceIds { get; set; } = [];
     public List<IFormFile> Photos { get; set; } = [];
     public IFormFile? Signature { get; set; }

@@ -44,3 +44,36 @@ export async function uploadLogo(file: File): Promise<string> {
   })
   return data
 }
+
+export type DayOfWeekName = 'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday'
+
+export const DAYS_OF_WEEK: DayOfWeekName[] = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
+]
+
+export interface DayHours {
+  dayOfWeek: DayOfWeekName
+  isOpen: boolean
+  openTime: string | null
+  closeTime: string | null
+}
+
+export interface BusinessHours {
+  slotDurationMinutes: number
+  days: DayHours[]
+}
+
+export async function getBusinessHours(): Promise<BusinessHours> {
+  const { data } = await api.get<BusinessHours>('/tenant/business-hours')
+  return data
+}
+
+export async function updateBusinessHours(input: BusinessHours): Promise<void> {
+  await api.put('/tenant/business-hours', input)
+}

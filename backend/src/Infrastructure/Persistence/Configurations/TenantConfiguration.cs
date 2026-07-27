@@ -15,5 +15,6 @@ public class TenantConfiguration : IEntityTypeConfiguration<Tenant>
         builder.Property(t => t.Status).HasConversion<string>().HasMaxLength(20);
         builder.Property(t => t.LogoUrl).HasMaxLength(500);
         builder.Property(t => t.BrandColor).HasMaxLength(7);
+        builder.Property(t => t.SlotDurationMinutes).HasDefaultValue(60);
     }
 }

@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
-import { Camera, CheckCircle2, Eraser, PawPrint, Sparkles, User, X } from 'lucide-react'
+import { Calendar, Camera, CheckCircle2, Clock, Eraser, PawPrint, Sparkles, User, X } from 'lucide-react'
 import { useRef, useState, type ChangeEvent } from 'react'
 import { useForm } from 'react-hook-form'
 import { useParams } from 'react-router-dom'
@@ -12,9 +12,22 @@ import { Button } from '../../components/ui/Button'
 import { cardClass, inputClass, labelClass } from '../../components/ui/styles'
 import { resolveUploadUrl } from '../../lib/apiBaseUrl'
 import { dataUrlToFile } from '../../lib/dataUrlToFile'
-import { getPublicTenantInfo, submitIntake } from './api'
+import { getAvailableSlots, getPublicTenantInfo, submitIntake } from './api'
 
 const MAX_PHOTOS = 6
+
+function todayIso() {
+  const now = new Date()
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+}
+
+function formatTime(time: string) {
+  const [h, m] = time.split(':')
+  const hour = Number(h)
+  const period = hour >= 12 ? 'p.m.' : 'a.m.'
+  const hour12 = hour % 12 === 0 ? 12 : hour % 12
+  return `${hour12}:${m} ${period}`
+}
 
 const formSchema = z.object({
   clientFullName: z.string().min(2, 'Ingresa tu nombre completo'),
@@ -54,8 +67,18 @@ export function PublicFormPage() {
   const [photos, setPhotos] = useState<File[]>([])
   const [petPhoto, setPetPhoto] = useState<File | null>(null)
   const [signatureError, setSignatureError] = useState(false)
-  const [submitted, setSubmitted] = useState<{ petName: string; clientFullName: string } | null>(null)
+  const [submitted, setSubmitted] = useState<{ petName: string; clientFullName: string; scheduledAt: string | null } | null>(null)
   const signatureRef = useRef<SignatureCanvas>(null)
+
+  const [selectedDate, setSelectedDate] = useState(todayIso())
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null)
+  const [slotError, setSlotError] = useState(false)
+
+  const { data: availability, isLoading: loadingSlots } = useQuery({
+    queryKey: ['available-slots', slug, selectedDate],
+    queryFn: () => getAvailableSlots(slug!, selectedDate),
+    enabled: Boolean(slug && selectedDate),
+  })
 
   const {
     register,
@@ -73,6 +96,7 @@ export function PublicFormPage() {
       return submitIntake(slug!, {
         ...values,
         petPhoto,
+        requestedAt: selectedSlot ? `${selectedDate}T${selectedSlot}` : undefined,
         requestedServiceIds: selectedServices,
         photos,
         signature: signatureFile,
@@ -82,6 +106,13 @@ export function PublicFormPage() {
   })
 
   function onSubmit(values: FormValues) {
+    if (!selectedSlot) {
+      setSlotError(true)
+      document.getElementById('schedule-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      return
+    }
+    setSlotError(false)
+
     if (!signatureRef.current || signatureRef.current.isEmpty()) {
       setSignatureError(true)
       document.getElementById('signature-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -120,10 +151,23 @@ export function PublicFormPage() {
           <CheckCircle2 className="h-8 w-8" strokeWidth={2} />
         </motion.div>
         <h1 className="mt-4 font-display text-xl font-semibold text-ink">¡Listo, {submitted.clientFullName}!</h1>
-        <p className="mt-2 max-w-sm text-ink-soft">
-          Registramos a <span className="font-medium text-ink">{submitted.petName}</span> en {info.tenantName}. Nos pondremos en
-          contacto contigo pronto.
-        </p>
+        {submitted.scheduledAt ? (
+          <p className="mt-2 max-w-sm text-ink-soft">
+            La cita de <span className="font-medium text-ink">{submitted.petName}</span> en {info.tenantName} quedó confirmada
+            para el{' '}
+            <span className="font-medium text-ink">
+              {new Intl.DateTimeFormat('es-EC', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' }).format(
+                new Date(submitted.scheduledAt),
+              )}
+            </span>
+            .
+          </p>
+        ) : (
+          <p className="mt-2 max-w-sm text-ink-soft">
+            Registramos a <span className="font-medium text-ink">{submitted.petName}</span> en {info.tenantName}. El horario que
+            elegiste ya no estaba disponible — nos pondremos en contacto contigo para coordinar otro.
+          </p>
+        )}
       </CenteredMessage>
     )
   }
@@ -213,6 +257,7 @@ export function PublicFormPage() {
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp,image/gif"
+                    capture="environment"
                     hidden
                     onChange={(e) => setPetPhoto(e.target.files?.[0] ?? null)}
                   />
@@ -264,6 +309,58 @@ export function PublicFormPage() {
             </Field>
           </Section>
 
+          <div id="schedule-section">
+            <Section icon={Calendar} title="Elige fecha y hora">
+              <Field label="Fecha">
+                <input
+                  type="date"
+                  value={selectedDate}
+                  min={todayIso()}
+                  onChange={(e) => {
+                    setSelectedDate(e.target.value)
+                    setSelectedSlot(null)
+                  }}
+                  className={inputClass}
+                />
+              </Field>
+
+              <div>
+                <label className={labelClass}>Hora disponible</label>
+                {loadingSlots && <p className="text-sm text-ink-soft">Buscando horarios…</p>}
+                {!loadingSlots && availability && availability.slots.length === 0 && (
+                  <p className="text-sm text-ink-soft">No hay horarios disponibles este día. Prueba con otra fecha.</p>
+                )}
+                {!loadingSlots && availability && availability.slots.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2">
+                    {availability.slots.map((slot) => {
+                      const checked = selectedSlot === slot
+                      return (
+                        <button
+                          type="button"
+                          key={slot}
+                          onClick={() => {
+                            setSelectedSlot(slot)
+                            setSlotError(false)
+                          }}
+                          className={`flex items-center justify-center gap-1 rounded-xl border px-2 py-2 text-sm transition-colors ${
+                            checked
+                              ? 'border-clay bg-clay/10 text-clay-dark'
+                              : 'border-sand-dark text-ink-soft hover:border-clay/40'
+                          }`}
+                          style={checked && info.brandColor ? { borderColor: info.brandColor, color: info.brandColor } : undefined}
+                        >
+                          <Clock className="h-3.5 w-3.5" strokeWidth={2} />
+                          {formatTime(slot)}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+                {slotError && <p className="mt-1 text-xs text-red-600">Elige un horario disponible antes de enviar.</p>}
+              </div>
+            </Section>
+          </div>
+
           <Section icon={Camera} title="Fotos (opcional)">
             <div className="flex flex-wrap gap-2">
               {photos.map((photo, i) => (
@@ -281,7 +378,14 @@ export function PublicFormPage() {
               {photos.length < MAX_PHOTOS && (
                 <label className="flex h-16 w-16 cursor-pointer items-center justify-center rounded-xl border border-dashed border-sand-dark text-ink-soft/50 hover:border-clay/50 hover:text-clay-dark">
                   <Camera className="h-5 w-5" strokeWidth={1.5} />
-                  <input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onChange={handlePhotosChange} />
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    capture="environment"
+                    multiple
+                    hidden
+                    onChange={handlePhotosChange}
+                  />
                 </label>
               )}
             </div>

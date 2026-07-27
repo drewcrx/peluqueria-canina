@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { KeyRound, PawPrint, Store } from 'lucide-react'
+import { Clock, KeyRound, PawPrint, Store } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { TenantShell } from '../../components/layout/TenantShell'
 import { useToast } from '../../components/toast/ToastProvider'
@@ -12,7 +12,31 @@ import { getErrorMessage } from '../../lib/getErrorMessage'
 import { changePassword } from '../auth/api'
 import { useAuth } from '../auth/AuthContext'
 import { ROLE_TENANT_OWNER } from '../auth/types'
-import { getMyTenant, updateBranding, uploadLogo } from '../tenant/api'
+import {
+  DAYS_OF_WEEK,
+  getBusinessHours,
+  getMyTenant,
+  updateBranding,
+  updateBusinessHours,
+  uploadLogo,
+  type BusinessHours,
+  type DayHours,
+  type DayOfWeekName,
+} from '../tenant/api'
+
+const DAY_LABELS: Record<DayOfWeekName, string> = {
+  Monday: 'Lunes',
+  Tuesday: 'Martes',
+  Wednesday: 'Miércoles',
+  Thursday: 'Jueves',
+  Friday: 'Viernes',
+  Saturday: 'Sábado',
+  Sunday: 'Domingo',
+}
+
+function toTimeInput(value: string | null): string {
+  return value ? value.slice(0, 5) : ''
+}
 
 export function MyBusinessPage() {
   const { user } = useAuth()
@@ -28,6 +52,7 @@ export function MyBusinessPage() {
       {tenant && (
         <div className="space-y-6">
           <BrandingSection tenant={tenant} isOwner={isOwner} />
+          <BusinessHoursSection isOwner={isOwner} />
           <PasswordSection />
         </div>
       )}
@@ -140,6 +165,114 @@ function BrandingSection({
         >
           {brandingMutation.isPending ? 'Guardando…' : 'Guardar cambios'}
         </Button>
+      )}
+    </SectionCard>
+  )
+}
+
+function BusinessHoursSection({ isOwner }: { isOwner: boolean }) {
+  const queryClient = useQueryClient()
+  const toast = useToast()
+  const { data } = useQuery({ queryKey: ['business-hours'], queryFn: getBusinessHours })
+
+  const [slotDurationMinutes, setSlotDurationMinutes] = useState(60)
+  const [days, setDays] = useState<DayHours[]>([])
+
+  useEffect(() => {
+    if (!data) return
+    setSlotDurationMinutes(data.slotDurationMinutes)
+    setDays(data.days)
+  }, [data])
+
+  const mutation = useMutation({
+    mutationFn: (input: BusinessHours) => updateBusinessHours(input),
+    onSuccess: () => {
+      toast.success('Horario actualizado.')
+      queryClient.invalidateQueries({ queryKey: ['business-hours'] })
+    },
+    onError: (error) => toast.error(getErrorMessage(error, 'No se pudo guardar el horario.')),
+  })
+
+  function updateDay(day: DayOfWeekName, patch: Partial<DayHours>) {
+    setDays((prev) => prev.map((d) => (d.dayOfWeek === day ? { ...d, ...patch } : d)))
+  }
+
+  if (days.length === 0) {
+    return null
+  }
+
+  return (
+    <SectionCard
+      icon={Clock}
+      title="Horario de atención"
+      description="Define cuándo estás abierto — tus clientes solo podrán elegir citas dentro de estas horas desde el formulario público."
+    >
+      <div className="space-y-2">
+        {DAYS_OF_WEEK.map((day) => {
+          const hours = days.find((d) => d.dayOfWeek === day)
+          if (!hours) return null
+          return (
+            <div key={day} className="flex flex-wrap items-center gap-3 rounded-xl border border-sand-dark/60 px-3.5 py-2.5">
+              <label className="flex w-32 shrink-0 items-center gap-2 text-sm font-medium text-ink">
+                <input
+                  type="checkbox"
+                  checked={hours.isOpen}
+                  disabled={!isOwner}
+                  onChange={(e) => updateDay(day, { isOpen: e.target.checked })}
+                  className="h-4 w-4 rounded border-sand-dark accent-clay-dark"
+                />
+                {DAY_LABELS[day]}
+              </label>
+              {hours.isOpen ? (
+                <div className="flex items-center gap-2 text-sm text-ink-soft">
+                  <input
+                    type="time"
+                    value={toTimeInput(hours.openTime)}
+                    disabled={!isOwner}
+                    onChange={(e) => updateDay(day, { openTime: `${e.target.value}:00` })}
+                    className={`${inputClass} w-32`}
+                  />
+                  <span>a</span>
+                  <input
+                    type="time"
+                    value={toTimeInput(hours.closeTime)}
+                    disabled={!isOwner}
+                    onChange={(e) => updateDay(day, { closeTime: `${e.target.value}:00` })}
+                    className={`${inputClass} w-32`}
+                  />
+                </div>
+              ) : (
+                <span className="text-sm text-ink-soft/60">Cerrado</span>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      <div className="mt-4 max-w-xs">
+        <label className={labelClass}>Duración de cada cita (minutos)</label>
+        <input
+          type="number"
+          min={15}
+          max={240}
+          step={15}
+          value={slotDurationMinutes}
+          disabled={!isOwner}
+          onChange={(e) => setSlotDurationMinutes(Number(e.target.value))}
+          className={inputClass}
+        />
+      </div>
+
+      {isOwner ? (
+        <Button
+          className="mt-5"
+          onClick={() => mutation.mutate({ slotDurationMinutes, days })}
+          disabled={mutation.isPending}
+        >
+          {mutation.isPending ? 'Guardando…' : 'Guardar horario'}
+        </Button>
+      ) : (
+        <p className="mt-4 text-sm text-ink-soft">Solo el dueño de la peluquería puede editar el horario.</p>
       )}
     </SectionCard>
   )

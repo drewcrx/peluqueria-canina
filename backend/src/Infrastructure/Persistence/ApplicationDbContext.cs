@@ -35,6 +35,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<CashTransaction> CashTransactions => Set<CashTransaction>();
     public DbSet<AppointmentPhoto> AppointmentPhotos => Set<AppointmentPhoto>();
     public DbSet<ApiKey> ApiKeys => Set<ApiKey>();
+    public DbSet<BusinessHours> BusinessHours => Set<BusinessHours>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

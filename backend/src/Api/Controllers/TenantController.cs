@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PeluqueriaSaas.Api.Auth;
 using PeluqueriaSaas.Application.Common.Interfaces;
+using PeluqueriaSaas.Application.Features.Tenants.GetBusinessHours;
 using PeluqueriaSaas.Application.Features.Tenants.GetMyTenant;
 using PeluqueriaSaas.Application.Features.Tenants.UpdateBranding;
+using PeluqueriaSaas.Application.Features.Tenants.UpdateBusinessHours;
 using PeluqueriaSaas.Application.Features.Tenants.UpdateCustomDomain;
 using PeluqueriaSaas.Application.Features.Tenants.UpdateWhatsAppSettings;
 using PeluqueriaSaas.Application.Features.Tenants.UploadLogo;
@@ -15,6 +17,7 @@ public record UpdateWhatsAppSettingsRequest(string? WhatsAppNumber);
 public record UpdateCustomDomainRequest(string? CustomDomainRequested);
 public record UpdateBrandingRequest(string Name, string? BrandColor);
 public record UploadLogoRequest(IFormFile Logo);
+public record UpdateBusinessHoursRequest(int SlotDurationMinutes, IReadOnlyList<DayHoursInput> Days);
 
 [ApiController]
 [Route("api/tenant")]
@@ -49,6 +52,20 @@ public class TenantController(ISender mediator) : ControllerBase
     public async Task<IActionResult> UpdateBranding(UpdateBrandingRequest request, CancellationToken cancellationToken)
     {
         await mediator.Send(new UpdateBrandingCommand(request.Name, request.BrandColor), cancellationToken);
+        return NoContent();
+    }
+
+    [HttpGet("business-hours")]
+    public async Task<ActionResult<BusinessHoursDto>> GetBusinessHours(CancellationToken cancellationToken)
+    {
+        return Ok(await mediator.Send(new GetBusinessHoursQuery(), cancellationToken));
+    }
+
+    [HttpPut("business-hours")]
+    [Authorize(Policy = AuthorizationPolicies.TenantOwner)]
+    public async Task<IActionResult> UpdateBusinessHours(UpdateBusinessHoursRequest request, CancellationToken cancellationToken)
+    {
+        await mediator.Send(new UpdateBusinessHoursCommand(request.SlotDurationMinutes, request.Days), cancellationToken);
         return NoContent();
     }
 

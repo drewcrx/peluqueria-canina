@@ -69,17 +69,53 @@ public class SubmitIntakeCommandHandler(IApplicationDbContext db, IFileStorage f
             tenant.Id, client.Id, pet.Id, request.Observations, photoUrls, signatureUrl, request.RequestedServiceIds);
         db.IntakeSubmissions.Add(submission);
 
+        DateTime? scheduledAt = null;
+        if (request.RequestedAt.HasValue)
+        {
+            // Re-chequeo contra condiciones de carrera: el horario pudo dejar de estar libre
+            // entre que el cliente lo vio en el formulario y el momento en que envía. Si ya no
+            // está disponible, la cita queda sin fecha en vez de fallar todo el envío.
+            var date = DateOnly.FromDateTime(request.RequestedAt.Value);
+            var dayHours = await db.BusinessHours
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(b => b.TenantId == tenant.Id && b.DayOfWeek == date.DayOfWeek, cancellationToken);
+
+            var dayStart = date.ToDateTime(TimeOnly.MinValue);
+            var dayEnd = dayStart.AddDays(1);
+            var occupied = await db.Appointments
+                .IgnoreQueryFilters()
+                .Where(a => a.TenantId == tenant.Id && a.Status != AppointmentStatus.Cancelled
+                    && a.ScheduledAt != null && a.ScheduledAt >= dayStart && a.ScheduledAt < dayEnd)
+                .Select(a => a.ScheduledAt!.Value)
+                .ToListAsync(cancellationToken);
+
+            var availableSlots = AvailabilityCalculator.ComputeAvailableSlots(
+                date, dayHours?.IsOpen ?? false, dayHours?.OpenTime, dayHours?.CloseTime,
+                tenant.SlotDurationMinutes, occupied, DateTime.Now);
+
+            if (availableSlots.Contains(TimeOnly.FromDateTime(request.RequestedAt.Value)))
+            {
+                // Sin SpecifyKind: se guarda como la misma hora local "naive" que usa el resto
+                // del sistema (igual que ScheduleAppointmentCommand) — así el valor que vuelve en
+                // la respuesta y el que ve el dueño en la Agenda siguen siendo la misma hora que
+                // el cliente eligió, sin que el navegador la reinterprete como UTC y la desplace.
+                scheduledAt = request.RequestedAt.Value;
+            }
+        }
+
         // Sin fecha: aparece en la Agenda bajo "Por agendar" para que el dueño confirme cuándo.
         var appointment = Appointment.Create(
-            tenant.Id, client.Id, pet.Id, scheduledAt: null, notes: request.Observations, request.RequestedServiceIds);
+            tenant.Id, client.Id, pet.Id, scheduledAt, notes: request.Observations, request.RequestedServiceIds);
         db.Appointments.Add(appointment);
 
-        var notification = Notification.Create(
-            tenant.Id, $"{client.FullName} registró a {pet.Name} a través del formulario público.");
+        var notificationMessage = scheduledAt.HasValue
+            ? $"{client.FullName} agendó una cita para {pet.Name} el {scheduledAt.Value:dd/MM/yyyy HH:mm}."
+            : $"{client.FullName} registró a {pet.Name} a través del formulario público.";
+        var notification = Notification.Create(tenant.Id, notificationMessage);
         db.Notifications.Add(notification);
 
         await db.SaveChangesAsync(cancellationToken);
 
-        return new SubmitIntakeResultDto(client.Id, pet.Id, client.FullName, pet.Name);
+        return new SubmitIntakeResultDto(client.Id, pet.Id, client.FullName, pet.Name, scheduledAt);
     }
 }

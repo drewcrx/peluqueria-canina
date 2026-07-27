@@ -22,8 +22,9 @@ public record SubmitIntakeCommand(
     string? Medications,
     string? Allergies,
     string? Observations,
+    DateTime? RequestedAt,
     IReadOnlyList<Guid> RequestedServiceIds,
     IReadOnlyList<StoredFile> Photos,
     StoredFile? Signature) : IRequest<SubmitIntakeResultDto>;
 
-public record SubmitIntakeResultDto(Guid ClientId, Guid PetId, string ClientFullName, string PetName);
+public record SubmitIntakeResultDto(Guid ClientId, Guid PetId, string ClientFullName, string PetName, DateTime? ScheduledAt);

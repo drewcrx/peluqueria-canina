@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PeluqueriaSaas.Infrastructure.Persistence;
@@ -12,9 +13,11 @@ using PeluqueriaSaas.Infrastructure.Persistence;
 namespace PeluqueriaSaas.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260727154032_BusinessHoursAndSlotDuration")]
+    partial class BusinessHoursAndSlotDuration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -188,7 +191,7 @@ namespace PeluqueriaSaas.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("TenantId");
 
-                    b.ToTable("ApiKeys", (string)null);
+                    b.ToTable("ApiKeys");
                 });
 
             modelBuilder.Entity("PeluqueriaSaas.Domain.Entities.Appointment", b =>
@@ -237,7 +240,7 @@ namespace PeluqueriaSaas.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("TenantId");
 
-                    b.ToTable("Appointments", (string)null);
+                    b.ToTable("Appointments");
                 });
 
             modelBuilder.Entity("PeluqueriaSaas.Domain.Entities.AppointmentPhoto", b =>
@@ -264,7 +267,7 @@ namespace PeluqueriaSaas.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("AppointmentId");
 
-                    b.ToTable("AppointmentPhotos", (string)null);
+                    b.ToTable("AppointmentPhotos");
                 });
 
             modelBuilder.Entity("PeluqueriaSaas.Domain.Entities.AppointmentService", b =>
@@ -279,7 +282,7 @@ namespace PeluqueriaSaas.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ServiceId");
 
-                    b.ToTable("AppointmentServices", (string)null);
+                    b.ToTable("AppointmentServices");
                 });
 
             modelBuilder.Entity("PeluqueriaSaas.Domain.Entities.Breed", b =>
@@ -301,7 +304,7 @@ namespace PeluqueriaSaas.Infrastructure.Persistence.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Breeds", (string)null);
+                    b.ToTable("Breeds");
                 });
 
             modelBuilder.Entity("PeluqueriaSaas.Domain.Entities.BusinessHours", b =>
@@ -333,7 +336,7 @@ namespace PeluqueriaSaas.Infrastructure.Persistence.Migrations
                     b.HasIndex("TenantId", "DayOfWeek")
                         .IsUnique();
 
-                    b.ToTable("BusinessHours", (string)null);
+                    b.ToTable("BusinessHours");
                 });
 
             modelBuilder.Entity("PeluqueriaSaas.Domain.Entities.CashRegisterSession", b =>
@@ -375,7 +378,7 @@ namespace PeluqueriaSaas.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("TenantId", "Status");
 
-                    b.ToTable("CashRegisterSessions", (string)null);
+                    b.ToTable("CashRegisterSessions");
                 });
 
             modelBuilder.Entity("PeluqueriaSaas.Domain.Entities.CashTransaction", b =>
@@ -409,7 +412,7 @@ namespace PeluqueriaSaas.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("SessionId");
 
-                    b.ToTable("CashTransactions", (string)null);
+                    b.ToTable("CashTransactions");
                 });
 
             modelBuilder.Entity("PeluqueriaSaas.Domain.Entities.Client", b =>
@@ -447,7 +450,7 @@ namespace PeluqueriaSaas.Infrastructure.Persistence.Migrations
                     b.HasIndex("TenantId", "Phone")
                         .IsUnique();
 
-                    b.ToTable("Clients", (string)null);
+                    b.ToTable("Clients");
                 });
 
             modelBuilder.Entity("PeluqueriaSaas.Domain.Entities.IntakeSubmission", b =>
@@ -489,7 +492,7 @@ namespace PeluqueriaSaas.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("TenantId");
 
-                    b.ToTable("IntakeSubmissions", (string)null);
+                    b.ToTable("IntakeSubmissions");
                 });
 
             modelBuilder.Entity("PeluqueriaSaas.Domain.Entities.IntakeSubmissionService", b =>
@@ -504,7 +507,7 @@ namespace PeluqueriaSaas.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ServiceId");
 
-                    b.ToTable("IntakeSubmissionServices", (string)null);
+                    b.ToTable("IntakeSubmissionServices");
                 });
 
             modelBuilder.Entity("PeluqueriaSaas.Domain.Entities.Notification", b =>
@@ -531,7 +534,7 @@ namespace PeluqueriaSaas.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("TenantId", "IsRead");
 
-                    b.ToTable("Notifications", (string)null);
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("PeluqueriaSaas.Domain.Entities.Pet", b =>
@@ -600,7 +603,7 @@ namespace PeluqueriaSaas.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("TenantId");
 
-                    b.ToTable("Pets", (string)null);
+                    b.ToTable("Pets");
                 });
 
             modelBuilder.Entity("PeluqueriaSaas.Domain.Entities.Plan", b =>
@@ -636,7 +639,7 @@ namespace PeluqueriaSaas.Infrastructure.Persistence.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("Plans", (string)null);
+                    b.ToTable("Plans");
                 });
 
             modelBuilder.Entity("PeluqueriaSaas.Domain.Entities.PlanFeature", b =>
@@ -661,7 +664,7 @@ namespace PeluqueriaSaas.Infrastructure.Persistence.Migrations
                     b.HasIndex("PlanId", "FeatureKey")
                         .IsUnique();
 
-                    b.ToTable("PlanFeatures", (string)null);
+                    b.ToTable("PlanFeatures");
                 });
 
             modelBuilder.Entity("PeluqueriaSaas.Domain.Entities.Product", b =>
@@ -697,7 +700,7 @@ namespace PeluqueriaSaas.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("TenantId");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("PeluqueriaSaas.Domain.Entities.RefreshToken", b =>
@@ -730,7 +733,7 @@ namespace PeluqueriaSaas.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens", (string)null);
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("PeluqueriaSaas.Domain.Entities.Service", b =>
@@ -757,7 +760,7 @@ namespace PeluqueriaSaas.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("TenantId");
 
-                    b.ToTable("Services", (string)null);
+                    b.ToTable("Services");
                 });
 
             modelBuilder.Entity("PeluqueriaSaas.Domain.Entities.StockMovement", b =>
@@ -789,7 +792,7 @@ namespace PeluqueriaSaas.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("StockMovements", (string)null);
+                    b.ToTable("StockMovements");
                 });
 
             modelBuilder.Entity("PeluqueriaSaas.Domain.Entities.Subscription", b =>
@@ -829,7 +832,7 @@ namespace PeluqueriaSaas.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("TenantId");
 
-                    b.ToTable("Subscriptions", (string)null);
+                    b.ToTable("Subscriptions");
                 });
 
             modelBuilder.Entity("PeluqueriaSaas.Domain.Entities.Tenant", b =>
@@ -880,7 +883,7 @@ namespace PeluqueriaSaas.Infrastructure.Persistence.Migrations
                     b.HasIndex("PublicFormSlug")
                         .IsUnique();
 
-                    b.ToTable("Tenants", (string)null);
+                    b.ToTable("Tenants");
                 });
 
             modelBuilder.Entity("PeluqueriaSaas.Infrastructure.Identity.ApplicationUser", b =>

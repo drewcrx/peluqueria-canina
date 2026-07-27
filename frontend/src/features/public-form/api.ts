@@ -29,6 +29,16 @@ export async function getPublicTenantInfo(slug: string): Promise<PublicTenantInf
   return data
 }
 
+export interface AvailableSlots {
+  slotDurationMinutes: number
+  slots: string[]
+}
+
+export async function getAvailableSlots(slug: string, date: string): Promise<AvailableSlots> {
+  const { data } = await publicApi.get<AvailableSlots>(`/public/tenants/${slug}/availability`, { params: { date } })
+  return data
+}
+
 export interface SubmitIntakeInput {
   clientFullName: string
   clientPhone: string
@@ -46,6 +56,7 @@ export interface SubmitIntakeInput {
   medications?: string
   allergies?: string
   observations?: string
+  requestedAt?: string
   requestedServiceIds: string[]
   photos: File[]
   signature: File | null
@@ -69,10 +80,11 @@ export async function submitIntake(slug: string, input: SubmitIntakeInput) {
   if (input.medications) form.append('Medications', input.medications)
   if (input.allergies) form.append('Allergies', input.allergies)
   if (input.observations) form.append('Observations', input.observations)
+  if (input.requestedAt) form.append('RequestedAt', input.requestedAt)
   input.requestedServiceIds.forEach((id) => form.append('RequestedServiceIds', id))
   input.photos.forEach((photo) => form.append('Photos', photo))
   if (input.signature) form.append('Signature', input.signature)
 
   const { data } = await publicApi.post(`/public/tenants/${slug}/submit`, form)
-  return data as { clientId: string; petId: string; clientFullName: string; petName: string }
+  return data as { clientId: string; petId: string; clientFullName: string; petName: string; scheduledAt: string | null }
 }

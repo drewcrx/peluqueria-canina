@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using PeluqueriaSaas.Api;
 using PeluqueriaSaas.Application.Common.Interfaces;
+using PeluqueriaSaas.Application.Features.Public.GetAvailableSlots;
 using PeluqueriaSaas.Application.Features.Public.GetPetCard;
 using PeluqueriaSaas.Application.Features.Public.GetPublicTenantInfo;
 using PeluqueriaSaas.Application.Features.Public.SubmitIntake;
@@ -20,6 +21,12 @@ public class PublicController(ISender mediator) : ControllerBase
     {
         var info = await mediator.Send(new GetPublicTenantInfoQuery(slug), cancellationToken);
         return Ok(info);
+    }
+
+    [HttpGet("{slug}/availability")]
+    public async Task<ActionResult<AvailableSlotsDto>> GetAvailableSlots(string slug, [FromQuery] DateOnly date, CancellationToken cancellationToken)
+    {
+        return Ok(await mediator.Send(new GetAvailableSlotsQuery(slug, date), cancellationToken));
     }
 
     [HttpPost("{slug}/submit")]
@@ -50,6 +57,7 @@ public class PublicController(ISender mediator) : ControllerBase
             request.Medications,
             request.Allergies,
             request.Observations,
+            request.RequestedAt,
             request.RequestedServiceIds,
             photos,
             signature);

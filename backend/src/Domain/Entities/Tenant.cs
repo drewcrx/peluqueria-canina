@@ -18,6 +18,11 @@ public class Tenant : BaseEntity
     public string? LogoUrl { get; private set; }
     public string? BrandColor { get; private set; }
 
+    // Duración asumida de cualquier cita, en minutos — usada para generar los horarios
+    // disponibles del formulario público y detectar cruces. Es un solo valor para todo el
+    // negocio (no por servicio) a propósito: mantiene la función simple de configurar.
+    public int SlotDurationMinutes { get; private set; } = 60;
+
     private Tenant() { }
 
     public static Tenant Create(string name, string publicFormSlug) => new()
@@ -36,4 +41,5 @@ public class Tenant : BaseEntity
     public void Rename(string name) => Name = name;
     public void SetLogoUrl(string? logoUrl) => LogoUrl = logoUrl;
     public void SetBrandColor(string? brandColor) => BrandColor = brandColor;
+    public void SetSlotDurationMinutes(int minutes) => SlotDurationMinutes = minutes;
 }

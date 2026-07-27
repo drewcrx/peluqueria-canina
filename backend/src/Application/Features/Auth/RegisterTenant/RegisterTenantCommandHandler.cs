@@ -41,6 +41,16 @@ public class RegisterTenantCommandHandler(
         // día uno — el dueño los edita o los reemplaza después desde el dashboard.
         db.Services.AddRange(DefaultServiceNames.Select(name => Service.Create(tenant.Id, name)));
 
+        // Horario por defecto (lunes a sábado 9:00-18:00, domingo cerrado) para que el selector
+        // de horas del formulario público funcione desde el día uno — el dueño lo ajusta después.
+        var defaultOpen = new TimeOnly(9, 0);
+        var defaultClose = new TimeOnly(18, 0);
+        db.BusinessHours.AddRange(Enum.GetValues<DayOfWeek>().Select(day =>
+            BusinessHours.Create(
+                tenant.Id, day, isOpen: day != DayOfWeek.Sunday,
+                openTime: day == DayOfWeek.Sunday ? null : defaultOpen,
+                closeTime: day == DayOfWeek.Sunday ? null : defaultClose)));
+
         // El usuario se crea al final: UserManager guarda internamente vía el mismo DbContext,
         // por lo que este SaveChanges implícito persiste Tenant + Subscription + User en una sola
         // transacción atómica (comportamiento estándar de EF Core al detectar múltiples entidades
