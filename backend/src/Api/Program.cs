@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
@@ -112,26 +113,48 @@ builder.Services.AddAuthorization(options =>
 
 // Protege el único endpoint público de escritura (envío del formulario) contra spam/abuso.
 // Sin esto, cualquiera podría automatizar envíos masivos al slug de una peluquería.
+//
+// AddPolicy + RateLimitPartition (NO AddFixedWindowLimiter a secas): AddFixedWindowLimiter crea
+// un único cupo GLOBAL compartido por todos los llamantes de la policy, no uno por IP — con eso,
+// 5 envíos de CUALQUIER persona agotaban el cupo para TODOS los demás durante la ventana (un
+// bug de denegación de servicio trivial, no la protección "contra un abusador" que dice el
+// comentario). Particionar por IP hace que el límite aplique por cliente, como se pretendía.
 builder.Services.AddRateLimiter(options =>
 {
-    options.AddFixedWindowLimiter(RateLimiterPolicies.PublicForm, opt =>
-    {
-        opt.Window = TimeSpan.FromMinutes(1);
-        opt.PermitLimit = 5;
-        opt.QueueLimit = 0;
-        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-    });
+    options.AddPolicy(RateLimiterPolicies.PublicForm, context => RateLimitPartition.GetFixedWindowLimiter(
+        partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        factory: _ => new FixedWindowRateLimiterOptions
+        {
+            Window = TimeSpan.FromMinutes(1),
+            PermitLimit = 5,
+            QueueLimit = 0,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+        }));
+
     // Sin esto, olvidé-mi-contraseña se puede usar para enumerar correos registrados a fuerza
     // bruta (aunque la respuesta no distinga "existe"/"no existe", el tiempo/volumen sí delata) o
     // para spamear el "envío" de correo.
-    options.AddFixedWindowLimiter(RateLimiterPolicies.PasswordReset, opt =>
-    {
-        opt.Window = TimeSpan.FromMinutes(1);
-        opt.PermitLimit = 5;
-        opt.QueueLimit = 0;
-        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-    });
+    options.AddPolicy(RateLimiterPolicies.PasswordReset, context => RateLimitPartition.GetFixedWindowLimiter(
+        partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        factory: _ => new FixedWindowRateLimiterOptions
+        {
+            Window = TimeSpan.FromMinutes(1),
+            PermitLimit = 5,
+            QueueLimit = 0,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+        }));
+
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    // En el VPS, Nginx hace el TLS y le pasa a Kestrel tráfico plano por localhost — sin esto,
+    // Request.Scheme siempre parece "http" (rompe UseHttpsRedirection, cookies Secure, y los
+    // links absolutos que arme el backend) y Request.IP siempre parece ser el propio Nginx.
+    // Los defaults (solo confía en el próximo salto desde loopback) ya cubren ese setup de un
+    // solo proxy en la misma máquina, así que no hace falta tocar KnownNetworks/KnownProxies.
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
 });
 
 var app = builder.Build();
@@ -144,6 +167,10 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+// Debe ir antes que cualquier middleware que dependa de Request.Scheme/RemoteIpAddress
+// (UseHttpsRedirection, rate limiting por IP, logging) — por eso está primero en la tubería.
+app.UseForwardedHeaders();
 
 if (app.Environment.IsDevelopment())
 {
